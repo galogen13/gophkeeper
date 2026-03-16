@@ -1,0 +1,10 @@
+server:
+  address: "localhost:8080"
+  tls_enabled: false
+
+storage:
+  path: "~/.gophkeeper/data.db"
+  encryption_key: ""  # будет запрошен при первом запуске
+
+log:
+  level: "info"

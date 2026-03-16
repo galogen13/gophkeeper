@@ -1,0 +1,23 @@
+services:
+  gophkeeper-postgres:
+    image: postgres:18-alpine3.23
+    container_name: gophkeeper-postgres
+    environment:
+      POSTGRES_DB: gophkeeper
+      POSTGRES_USER: gophkeeper
+      POSTGRES_PASSWORD: gophkeeper
+      LANG: C.UTF-8
+      LC_ALL: C.UTF-8
+    ports:
+      - "5435:5432"
+    volumes:
+      - gophkeeper_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gophkeeper"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  gophkeeper_postgres_data:
+    external: true
