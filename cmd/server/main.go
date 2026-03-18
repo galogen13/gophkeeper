@@ -1,11 +1,11 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
 	"net"
-	"os"
 	"os/signal"
 	"syscall"
 
@@ -100,21 +100,26 @@ func run() error {
 
 	logger.Log.Info("Server listening", zap.String("address", cfg.Server.Address))
 
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
+	defer stop()
+
 	// Graceful shutdown
+	grpcServerErrChan := make(chan error, 1)
 	go func() {
+		defer close(grpcServerErrChan)
 		if err := grpcServer.Serve(listener); err != nil {
-			log.Fatalf("Failed to serve: %v", err)
+			grpcServerErrChan <- err
 		}
 	}()
 
-	// Ждём сигнала завершения
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-
-	logger.Log.Info("Shutting down server...")
-	grpcServer.GracefulStop()
-	logger.Log.Info("Server stopped")
+	select {
+	case err := <-grpcServerErrChan:
+		return err
+	case <-ctx.Done():
+		logger.Log.Info("Shutting down server...")
+		grpcServer.GracefulStop()
+		logger.Log.Info("Server stopped")
+	}
 
 	return nil
 }
