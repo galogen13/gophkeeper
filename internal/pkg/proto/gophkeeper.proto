@@ -22,7 +22,7 @@ service KeeperService {
   rpc ListSecrets(ListSecretsRequest) returns (ListSecretsResponse);
   rpc UpdateSecret(UpdateSecretRequest) returns (Secret);
   rpc DeleteSecret(DeleteSecretRequest) returns (google.protobuf.Empty);
-  rpc SyncSecrets(SyncRequest) returns (stream SyncUpdate);
+  rpc SyncSecrets(SyncRequest) returns (SyncResponse);
 }
 
 // Типы секретов
@@ -110,9 +110,7 @@ message SyncRequest {
   repeated string known_ids = 2;  // ID секретов, которые есть у клиента
 }
 
-message SyncUpdate {
-  oneof update {
-    Secret secret = 1;
-    string deleted_id = 2;
-  }
+message SyncResponse {
+  repeated Secret secrets = 1;        // новые и обновлённые секреты
+  repeated string deleted_ids = 2;    // ID удалённых секретов
 }

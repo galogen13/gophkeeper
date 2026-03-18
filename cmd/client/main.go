@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/galogen13/gophkeeper/internal/buildinfo"
 	"github.com/galogen13/gophkeeper/internal/client/commands"
 )
 
 var (
-	buildVersion = "N/A"
-	buildDate    = "N/A"
+	buildVersion = buildinfo.BuildInfoNotAvaluable
+	buildDate    = buildinfo.BuildInfoNotAvaluable
 )
 
 func main() {

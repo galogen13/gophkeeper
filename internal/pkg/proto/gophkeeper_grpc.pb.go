@@ -221,7 +221,7 @@ type KeeperServiceClient interface {
 	ListSecrets(ctx context.Context, in *ListSecretsRequest, opts ...grpc.CallOption) (*ListSecretsResponse, error)
 	UpdateSecret(ctx context.Context, in *UpdateSecretRequest, opts ...grpc.CallOption) (*Secret, error)
 	DeleteSecret(ctx context.Context, in *DeleteSecretRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	SyncSecrets(ctx context.Context, in *SyncRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[SyncUpdate], error)
+	SyncSecrets(ctx context.Context, in *SyncRequest, opts ...grpc.CallOption) (*SyncResponse, error)
 }
 
 type keeperServiceClient struct {
@@ -282,24 +282,15 @@ func (c *keeperServiceClient) DeleteSecret(ctx context.Context, in *DeleteSecret
 	return out, nil
 }
 
-func (c *keeperServiceClient) SyncSecrets(ctx context.Context, in *SyncRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[SyncUpdate], error) {
+func (c *keeperServiceClient) SyncSecrets(ctx context.Context, in *SyncRequest, opts ...grpc.CallOption) (*SyncResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &KeeperService_ServiceDesc.Streams[0], KeeperService_SyncSecrets_FullMethodName, cOpts...)
+	out := new(SyncResponse)
+	err := c.cc.Invoke(ctx, KeeperService_SyncSecrets_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[SyncRequest, SyncUpdate]{ClientStream: stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
+	return out, nil
 }
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type KeeperService_SyncSecretsClient = grpc.ServerStreamingClient[SyncUpdate]
 
 // KeeperServiceServer is the server API for KeeperService service.
 // All implementations must embed UnimplementedKeeperServiceServer
@@ -312,7 +303,7 @@ type KeeperServiceServer interface {
 	ListSecrets(context.Context, *ListSecretsRequest) (*ListSecretsResponse, error)
 	UpdateSecret(context.Context, *UpdateSecretRequest) (*Secret, error)
 	DeleteSecret(context.Context, *DeleteSecretRequest) (*emptypb.Empty, error)
-	SyncSecrets(*SyncRequest, grpc.ServerStreamingServer[SyncUpdate]) error
+	SyncSecrets(context.Context, *SyncRequest) (*SyncResponse, error)
 	mustEmbedUnimplementedKeeperServiceServer()
 }
 
@@ -338,8 +329,8 @@ func (UnimplementedKeeperServiceServer) UpdateSecret(context.Context, *UpdateSec
 func (UnimplementedKeeperServiceServer) DeleteSecret(context.Context, *DeleteSecretRequest) (*emptypb.Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteSecret not implemented")
 }
-func (UnimplementedKeeperServiceServer) SyncSecrets(*SyncRequest, grpc.ServerStreamingServer[SyncUpdate]) error {
-	return status.Error(codes.Unimplemented, "method SyncSecrets not implemented")
+func (UnimplementedKeeperServiceServer) SyncSecrets(context.Context, *SyncRequest) (*SyncResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SyncSecrets not implemented")
 }
 func (UnimplementedKeeperServiceServer) mustEmbedUnimplementedKeeperServiceServer() {}
 func (UnimplementedKeeperServiceServer) testEmbeddedByValue()                       {}
@@ -452,16 +443,23 @@ func _KeeperService_DeleteSecret_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
-func _KeeperService_SyncSecrets_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(SyncRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
+func _KeeperService_SyncSecrets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SyncRequest)
+	if err := dec(in); err != nil {
+		return nil, err
 	}
-	return srv.(KeeperServiceServer).SyncSecrets(m, &grpc.GenericServerStream[SyncRequest, SyncUpdate]{ServerStream: stream})
+	if interceptor == nil {
+		return srv.(KeeperServiceServer).SyncSecrets(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KeeperService_SyncSecrets_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KeeperServiceServer).SyncSecrets(ctx, req.(*SyncRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type KeeperService_SyncSecretsServer = grpc.ServerStreamingServer[SyncUpdate]
 
 // KeeperService_ServiceDesc is the grpc.ServiceDesc for KeeperService service.
 // It's only intended for direct use with grpc.RegisterService,
@@ -490,13 +488,11 @@ var KeeperService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "DeleteSecret",
 			Handler:    _KeeperService_DeleteSecret_Handler,
 		},
-	},
-	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "SyncSecrets",
-			Handler:       _KeeperService_SyncSecrets_Handler,
-			ServerStreams: true,
+			MethodName: "SyncSecrets",
+			Handler:    _KeeperService_SyncSecrets_Handler,
 		},
 	},
+	Streams:  []grpc.StreamDesc{},
 	Metadata: "internal/pkg/proto/gophkeeper.proto",
 }

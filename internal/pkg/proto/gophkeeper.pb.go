@@ -1776,27 +1776,28 @@ func (b0 SyncRequest_builder) Build() *SyncRequest {
 	return m0
 }
 
-type SyncUpdate struct {
-	state             protoimpl.MessageState `protogen:"opaque.v1"`
-	xxx_hidden_Update isSyncUpdate_Update    `protobuf_oneof:"update"`
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
+type SyncResponse struct {
+	state                 protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_Secrets    *[]*Secret             `protobuf:"bytes,1,rep,name=secrets"`
+	xxx_hidden_DeletedIds []string               `protobuf:"bytes,2,rep,name=deleted_ids,json=deletedIds"`
+	unknownFields         protoimpl.UnknownFields
+	sizeCache             protoimpl.SizeCache
 }
 
-func (x *SyncUpdate) Reset() {
-	*x = SyncUpdate{}
+func (x *SyncResponse) Reset() {
+	*x = SyncResponse{}
 	mi := &file_internal_pkg_proto_gophkeeper_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *SyncUpdate) String() string {
+func (x *SyncResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*SyncUpdate) ProtoMessage() {}
+func (*SyncResponse) ProtoMessage() {}
 
-func (x *SyncUpdate) ProtoReflect() protoreflect.Message {
+func (x *SyncResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_internal_pkg_proto_gophkeeper_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -1808,140 +1809,45 @@ func (x *SyncUpdate) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-func (x *SyncUpdate) GetSecret() *Secret {
+func (x *SyncResponse) GetSecrets() []*Secret {
 	if x != nil {
-		if x, ok := x.xxx_hidden_Update.(*syncUpdate_Secret); ok {
-			return x.Secret
+		if x.xxx_hidden_Secrets != nil {
+			return *x.xxx_hidden_Secrets
 		}
 	}
 	return nil
 }
 
-func (x *SyncUpdate) GetDeletedId() string {
+func (x *SyncResponse) GetDeletedIds() []string {
 	if x != nil {
-		if x, ok := x.xxx_hidden_Update.(*syncUpdate_DeletedId); ok {
-			return x.DeletedId
-		}
+		return x.xxx_hidden_DeletedIds
 	}
-	return ""
+	return nil
 }
 
-func (x *SyncUpdate) SetSecret(v *Secret) {
-	if v == nil {
-		x.xxx_hidden_Update = nil
-		return
-	}
-	x.xxx_hidden_Update = &syncUpdate_Secret{v}
+func (x *SyncResponse) SetSecrets(v []*Secret) {
+	x.xxx_hidden_Secrets = &v
 }
 
-func (x *SyncUpdate) SetDeletedId(v string) {
-	x.xxx_hidden_Update = &syncUpdate_DeletedId{v}
+func (x *SyncResponse) SetDeletedIds(v []string) {
+	x.xxx_hidden_DeletedIds = v
 }
 
-func (x *SyncUpdate) HasUpdate() bool {
-	if x == nil {
-		return false
-	}
-	return x.xxx_hidden_Update != nil
-}
-
-func (x *SyncUpdate) HasSecret() bool {
-	if x == nil {
-		return false
-	}
-	_, ok := x.xxx_hidden_Update.(*syncUpdate_Secret)
-	return ok
-}
-
-func (x *SyncUpdate) HasDeletedId() bool {
-	if x == nil {
-		return false
-	}
-	_, ok := x.xxx_hidden_Update.(*syncUpdate_DeletedId)
-	return ok
-}
-
-func (x *SyncUpdate) ClearUpdate() {
-	x.xxx_hidden_Update = nil
-}
-
-func (x *SyncUpdate) ClearSecret() {
-	if _, ok := x.xxx_hidden_Update.(*syncUpdate_Secret); ok {
-		x.xxx_hidden_Update = nil
-	}
-}
-
-func (x *SyncUpdate) ClearDeletedId() {
-	if _, ok := x.xxx_hidden_Update.(*syncUpdate_DeletedId); ok {
-		x.xxx_hidden_Update = nil
-	}
-}
-
-const SyncUpdate_Update_not_set_case case_SyncUpdate_Update = 0
-const SyncUpdate_Secret_case case_SyncUpdate_Update = 1
-const SyncUpdate_DeletedId_case case_SyncUpdate_Update = 2
-
-func (x *SyncUpdate) WhichUpdate() case_SyncUpdate_Update {
-	if x == nil {
-		return SyncUpdate_Update_not_set_case
-	}
-	switch x.xxx_hidden_Update.(type) {
-	case *syncUpdate_Secret:
-		return SyncUpdate_Secret_case
-	case *syncUpdate_DeletedId:
-		return SyncUpdate_DeletedId_case
-	default:
-		return SyncUpdate_Update_not_set_case
-	}
-}
-
-type SyncUpdate_builder struct {
+type SyncResponse_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	// Fields of oneof xxx_hidden_Update:
-	Secret    *Secret
-	DeletedId *string
-	// -- end of xxx_hidden_Update
+	Secrets    []*Secret
+	DeletedIds []string
 }
 
-func (b0 SyncUpdate_builder) Build() *SyncUpdate {
-	m0 := &SyncUpdate{}
+func (b0 SyncResponse_builder) Build() *SyncResponse {
+	m0 := &SyncResponse{}
 	b, x := &b0, m0
 	_, _ = b, x
-	if b.Secret != nil {
-		x.xxx_hidden_Update = &syncUpdate_Secret{b.Secret}
-	}
-	if b.DeletedId != nil {
-		x.xxx_hidden_Update = &syncUpdate_DeletedId{*b.DeletedId}
-	}
+	x.xxx_hidden_Secrets = &b.Secrets
+	x.xxx_hidden_DeletedIds = b.DeletedIds
 	return m0
 }
-
-type case_SyncUpdate_Update protoreflect.FieldNumber
-
-func (x case_SyncUpdate_Update) String() string {
-	md := file_internal_pkg_proto_gophkeeper_proto_msgTypes[12].Descriptor()
-	if x == 0 {
-		return "not set"
-	}
-	return protoimpl.X.MessageFieldStringOf(md, protoreflect.FieldNumber(x))
-}
-
-type isSyncUpdate_Update interface {
-	isSyncUpdate_Update()
-}
-
-type syncUpdate_Secret struct {
-	Secret *Secret `protobuf:"bytes,1,opt,name=secret,oneof"`
-}
-
-type syncUpdate_DeletedId struct {
-	DeletedId string `protobuf:"bytes,2,opt,name=deleted_id,json=deletedId,oneof"`
-}
-
-func (*syncUpdate_Secret) isSyncUpdate_Update() {}
-
-func (*syncUpdate_DeletedId) isSyncUpdate_Update() {}
 
 var File_internal_pkg_proto_gophkeeper_proto protoreflect.FileDescriptor
 
@@ -2003,13 +1909,11 @@ const file_internal_pkg_proto_gophkeeper_proto_rawDesc = "" +
 	"\tpermanent\x18\x02 \x01(\bR\tpermanent\"c\n" +
 	"\vSyncRequest\x127\n" +
 	"\tlast_sync\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\blastSync\x12\x1b\n" +
-	"\tknown_ids\x18\x02 \x03(\tR\bknownIds\"e\n" +
-	"\n" +
-	"SyncUpdate\x12,\n" +
-	"\x06secret\x18\x01 \x01(\v2\x12.gophkeeper.SecretH\x00R\x06secret\x12\x1f\n" +
-	"\n" +
-	"deleted_id\x18\x02 \x01(\tH\x00R\tdeletedIdB\b\n" +
-	"\x06update*\x8f\x01\n" +
+	"\tknown_ids\x18\x02 \x03(\tR\bknownIds\"]\n" +
+	"\fSyncResponse\x12,\n" +
+	"\asecrets\x18\x01 \x03(\v2\x12.gophkeeper.SecretR\asecrets\x12\x1f\n" +
+	"\vdeleted_ids\x18\x02 \x03(\tR\n" +
+	"deletedIds*\x8f\x01\n" +
 	"\n" +
 	"SecretType\x12\x1b\n" +
 	"\x17SECRET_TYPE_UNSPECIFIED\x10\x00\x12\x1b\n" +
@@ -2027,7 +1931,7 @@ const file_internal_pkg_proto_gophkeeper_proto_rawDesc = "" +
 	"\vListSecrets\x12\x1e.gophkeeper.ListSecretsRequest\x1a\x1f.gophkeeper.ListSecretsResponse\x12C\n" +
 	"\fUpdateSecret\x12\x1f.gophkeeper.UpdateSecretRequest\x1a\x12.gophkeeper.Secret\x12G\n" +
 	"\fDeleteSecret\x12\x1f.gophkeeper.DeleteSecretRequest\x1a\x16.google.protobuf.Empty\x12@\n" +
-	"\vSyncSecrets\x12\x17.gophkeeper.SyncRequest\x1a\x16.gophkeeper.SyncUpdate0\x01B<Z2github.com/galogen13/gophkeeper/internal/pkg/proto\x92\x03\x05\xd2>\x02\x10\x03b\beditionsp\xe8\a"
+	"\vSyncSecrets\x12\x17.gophkeeper.SyncRequest\x1a\x18.gophkeeper.SyncResponseB<Z2github.com/galogen13/gophkeeper/internal/pkg/proto\x92\x03\x05\xd2>\x02\x10\x03b\beditionsp\xe8\a"
 
 var file_internal_pkg_proto_gophkeeper_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_internal_pkg_proto_gophkeeper_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
@@ -2045,7 +1949,7 @@ var file_internal_pkg_proto_gophkeeper_proto_goTypes = []any{
 	(*UpdateSecretRequest)(nil),   // 10: gophkeeper.UpdateSecretRequest
 	(*DeleteSecretRequest)(nil),   // 11: gophkeeper.DeleteSecretRequest
 	(*SyncRequest)(nil),           // 12: gophkeeper.SyncRequest
-	(*SyncUpdate)(nil),            // 13: gophkeeper.SyncUpdate
+	(*SyncResponse)(nil),          // 13: gophkeeper.SyncResponse
 	(*timestamppb.Timestamp)(nil), // 14: google.protobuf.Timestamp
 	(*emptypb.Empty)(nil),         // 15: google.protobuf.Empty
 }
@@ -2056,7 +1960,7 @@ var file_internal_pkg_proto_gophkeeper_proto_depIdxs = []int32{
 	0,  // 3: gophkeeper.CreateSecretRequest.type:type_name -> gophkeeper.SecretType
 	1,  // 4: gophkeeper.ListSecretsResponse.secrets:type_name -> gophkeeper.Secret
 	14, // 5: gophkeeper.SyncRequest.last_sync:type_name -> google.protobuf.Timestamp
-	1,  // 6: gophkeeper.SyncUpdate.secret:type_name -> gophkeeper.Secret
+	1,  // 6: gophkeeper.SyncResponse.secrets:type_name -> gophkeeper.Secret
 	2,  // 7: gophkeeper.AuthService.Register:input_type -> gophkeeper.RegisterRequest
 	3,  // 8: gophkeeper.AuthService.Login:input_type -> gophkeeper.LoginRequest
 	5,  // 9: gophkeeper.AuthService.RefreshToken:input_type -> gophkeeper.RefreshTokenRequest
@@ -2074,7 +1978,7 @@ var file_internal_pkg_proto_gophkeeper_proto_depIdxs = []int32{
 	9,  // 21: gophkeeper.KeeperService.ListSecrets:output_type -> gophkeeper.ListSecretsResponse
 	1,  // 22: gophkeeper.KeeperService.UpdateSecret:output_type -> gophkeeper.Secret
 	15, // 23: gophkeeper.KeeperService.DeleteSecret:output_type -> google.protobuf.Empty
-	13, // 24: gophkeeper.KeeperService.SyncSecrets:output_type -> gophkeeper.SyncUpdate
+	13, // 24: gophkeeper.KeeperService.SyncSecrets:output_type -> gophkeeper.SyncResponse
 	16, // [16:25] is the sub-list for method output_type
 	7,  // [7:16] is the sub-list for method input_type
 	7,  // [7:7] is the sub-list for extension type_name
@@ -2086,10 +1990,6 @@ func init() { file_internal_pkg_proto_gophkeeper_proto_init() }
 func file_internal_pkg_proto_gophkeeper_proto_init() {
 	if File_internal_pkg_proto_gophkeeper_proto != nil {
 		return
-	}
-	file_internal_pkg_proto_gophkeeper_proto_msgTypes[12].OneofWrappers = []any{
-		(*syncUpdate_Secret)(nil),
-		(*syncUpdate_DeletedId)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

@@ -16,7 +16,7 @@ type secretRepository struct {
 	db *sql.DB
 }
 
-func NewSecretRepository(db *sql.DB) repository.SecretRepository {
+func NewSecretRepository(db *sql.DB) *secretRepository {
 	return &secretRepository{db: db}
 }
 

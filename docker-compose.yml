@@ -6,12 +6,13 @@ services:
       POSTGRES_DB: gophkeeper
       POSTGRES_USER: gophkeeper
       POSTGRES_PASSWORD: gophkeeper
+      PGDATA: /var/lib/postgresql/data/pgdata
       LANG: C.UTF-8
       LC_ALL: C.UTF-8
     ports:
       - "5435:5432"
     volumes:
-      - gophkeeper_postgres_data:/var/lib/postgresql/data
+      - gophkeeper_pg_data:/var/lib/postgresql:Z
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U gophkeeper"]
       interval: 5s
@@ -19,5 +20,5 @@ services:
       retries: 5
 
 volumes:
-  gophkeeper_postgres_data:
-    external: true
+  gophkeeper_pg_data:
+    name: gophkeeper_pg_data

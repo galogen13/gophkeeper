@@ -3,15 +3,13 @@ package postgres
 import (
 	"context"
 	"database/sql"
-
-	"github.com/galogen13/gophkeeper/internal/server/repository"
 )
 
 type transactionManager struct {
 	db *sql.DB
 }
 
-func NewTransactionManager(db *sql.DB) repository.TransactionManager {
+func NewTransactionManager(db *sql.DB) *transactionManager {
 	return &transactionManager{db: db}
 }
 

@@ -4,7 +4,7 @@ server:
 
 database:
   host: "localhost"
-  port: 5432
+  port: 5435
   user: "gophkeeper"
   password: "gophkeeper"
   dbname: "gophkeeper"
@@ -18,10 +18,9 @@ jwt:
 crypto:
   argon2:
     time: 1
-    memory: 64 * 1024
+    memory: 65536
     threads: 4
     key_len: 32
 
 log:
   level: "debug"
-  format: "console"  # console или json

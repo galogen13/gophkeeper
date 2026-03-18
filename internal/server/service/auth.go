@@ -13,15 +13,15 @@ import (
 )
 
 type AuthService struct {
-	userRepo   repository.UserRepository
-	txManager  repository.TransactionManager
+	userRepo   UserRepository
+	txManager  TransactionManager
 	hasher     *crypto.PasswordHasher
 	jwtManager *crypto.JWTManager
 }
 
 func NewAuthService(
-	userRepo repository.UserRepository,
-	txManager repository.TransactionManager,
+	userRepo UserRepository,
+	txManager TransactionManager,
 	hasher *crypto.PasswordHasher,
 	jwtManager *crypto.JWTManager,
 ) *AuthService {

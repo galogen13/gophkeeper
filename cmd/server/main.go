@@ -1,56 +1,120 @@
 package main
 
 import (
-	"context"
-	"database/sql"
 	"flag"
+	"fmt"
 	"log"
+	"net"
+	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
-	_ "github.com/lib/pq"
+	"github.com/galogen13/gophkeeper/internal/buildinfo"
+	"github.com/galogen13/gophkeeper/internal/logger"
+	"github.com/galogen13/gophkeeper/internal/pkg/proto"
+	"github.com/galogen13/gophkeeper/internal/server/config"
+	"github.com/galogen13/gophkeeper/internal/server/crypto"
+	"github.com/galogen13/gophkeeper/internal/server/handlers"
+	"github.com/galogen13/gophkeeper/internal/server/middleware"
+	"github.com/galogen13/gophkeeper/internal/server/repository/postgres"
+	"github.com/galogen13/gophkeeper/internal/server/service"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
 )
 
 var (
-	buildVersion = "N/A"
-	buildDate    = "N/A"
+	buildVersion = buildinfo.BuildInfoNotAvaluable
+	buildDate    = buildinfo.BuildInfoNotAvaluable
 )
 
 func main() {
-	// Вывод версии при запуске
-	log.Printf("Starting GophKeeper Server")
-	log.Printf("Version: %s", buildVersion)
-	log.Printf("Build date: %s", buildDate)
 
-	// Парсинг флагов
+	buildinfo.PrintBuildInfo(buildVersion, buildDate)
+
+	if err := run(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func run() error {
 	configPath := flag.String("config", "configs/server.yaml", "path to config file")
 	flag.Parse()
 
-	// TODO: Здесь будет инициализация приложения
-	log.Printf("Config path: %s", *configPath)
-	log.Printf("Server starting...")
-
-	connStr := "postgres://gophkeeper:gophkeeper@localhost:5435/gophkeeper?sslmode=disable&client_encoding=UTF8&lc_messages=C"
-	db, err := sql.Open("postgres", connStr)
+	cfg, err := config.Load(*configPath)
 	if err != nil {
-		log.Fatal("Failed to connect to database:", err)
+		return fmt.Errorf("failed to load config: %w", err)
+	}
+
+	if err := logger.Initialize(cfg.Log.Level); err != nil {
+		return fmt.Errorf("failed to init logger: %w", err)
+	}
+	defer logger.Log.Sync()
+
+	// Подключение к БД
+	db, err := postgres.ConnectDB(cfg.Database)
+	if err != nil {
+		return fmt.Errorf("failed to connect to database: %w", err)
 	}
 	defer db.Close()
 
-	if err := db.Ping(); err != nil {
-		log.Fatal("Database ping failed:", err)
+	// Инициализация репозиториев
+	userRepo := postgres.NewUserRepository(db)
+	secretRepo := postgres.NewSecretRepository(db)
+	txManager := postgres.NewTransactionManager(db)
+
+	// Инициализация криптографии
+	passwordHasher := crypto.NewPasswordHasher(crypto.DefaultPasswordConfig)
+	jwtManager := crypto.NewJWTManager(
+		cfg.JWT.Secret,
+		cfg.JWT.AccessTokenTTL,
+		cfg.JWT.RefreshTokenTTL,
+	)
+
+	// Инициализация сервисов
+	authService := service.NewAuthService(userRepo, txManager, passwordHasher, jwtManager)
+	secretService := service.NewSecretService(secretRepo, txManager)
+
+	// Создаём middleware
+	authMiddleware := middleware.NewAuthMiddleware(jwtManager)
+
+	// Настраиваем gRPC сервер с перехватчиками
+	grpcServer := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(
+			middleware.LoggingInterceptor(),
+			authMiddleware.AuthInterceptor(),
+		),
+	)
+
+	// Регистрируем обработчики
+	proto.RegisterAuthServiceServer(grpcServer, handlers.NewAuthHandler(authService))
+	proto.RegisterKeeperServiceServer(grpcServer, handlers.NewKeeperHandler(secretService))
+
+	// Включаем reflection для инструментов типа grpcurl (только для разработки)
+	// reflection.Register(grpcServer)
+
+	// Запускаем сервер
+	listener, err := net.Listen("tcp", cfg.Server.Address)
+	if err != nil {
+		return fmt.Errorf("ailed to listen: %w", err)
 	}
 
-	log.Println("Successfully connected to database!")
+	logger.Log.Info("Server listening", zap.String("address", cfg.Server.Address))
 
 	// Graceful shutdown
-	ctx, stop := signal.NotifyContext(context.Background(),
-		syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-	defer stop()
+	go func() {
+		if err := grpcServer.Serve(listener); err != nil {
+			log.Fatalf("Failed to serve: %v", err)
+		}
+	}()
 
-	<-ctx.Done()
-	log.Println("Shutting down server...")
-	time.Sleep(2 * time.Second)
-	log.Println("Server stopped")
+	// Ждём сигнала завершения
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	logger.Log.Info("Shutting down server...")
+	grpcServer.GracefulStop()
+	logger.Log.Info("Server stopped")
+
+	return nil
 }
