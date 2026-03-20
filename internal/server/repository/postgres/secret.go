@@ -6,7 +6,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/galogen13/gophkeeper/internal/pkg/models"
+	"github.com/galogen13/gophkeeper/internal/server"
 	"github.com/galogen13/gophkeeper/internal/server/repository"
 
 	"github.com/google/uuid"
@@ -20,7 +20,7 @@ func NewSecretRepository(db *sql.DB) *secretRepository {
 	return &secretRepository{db: db}
 }
 
-func (r *secretRepository) Create(ctx context.Context, secret *models.Secret) error {
+func (r *secretRepository) Create(ctx context.Context, secret *server.Secret) error {
 	query := `
         INSERT INTO secrets (id, owner_id, type, title, encrypted_data, meta, version, created_at)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
@@ -41,14 +41,14 @@ func (r *secretRepository) Create(ctx context.Context, secret *models.Secret) er
 	return err
 }
 
-func (r *secretRepository) GetByID(ctx context.Context, id, ownerID uuid.UUID) (*models.Secret, error) {
+func (r *secretRepository) GetByID(ctx context.Context, id, ownerID uuid.UUID) (*server.Secret, error) {
 	query := `
         SELECT id, owner_id, type, title, encrypted_data, meta, version, created_at, updated_at, deleted_at
         FROM secrets
         WHERE id = $1 AND owner_id = $2
     `
 
-	secret := &models.Secret{}
+	secret := &server.Secret{}
 	var updatedAt, deletedAt sql.NullTime
 
 	err := r.db.QueryRowContext(ctx, query, id, ownerID).Scan(
@@ -74,7 +74,7 @@ func (r *secretRepository) GetByID(ctx context.Context, id, ownerID uuid.UUID) (
 	return secret, nil
 }
 
-func (r *secretRepository) ListByOwner(ctx context.Context, ownerID uuid.UUID, limit, offset int, includeDeleted bool) ([]*models.Secret, int64, error) {
+func (r *secretRepository) ListByOwner(ctx context.Context, ownerID uuid.UUID, limit, offset int, includeDeleted bool) ([]*server.Secret, int64, error) {
 	// Сначала получаем общее количество
 	countQuery := `SELECT COUNT(*) FROM secrets WHERE owner_id = $1`
 	if !includeDeleted {
@@ -104,9 +104,9 @@ func (r *secretRepository) ListByOwner(ctx context.Context, ownerID uuid.UUID, l
 	}
 	defer rows.Close()
 
-	var secrets []*models.Secret
+	var secrets []*server.Secret
 	for rows.Next() {
-		secret := &models.Secret{}
+		secret := &server.Secret{}
 		var updatedAt, deletedAt sql.NullTime
 
 		err := rows.Scan(
@@ -131,7 +131,7 @@ func (r *secretRepository) ListByOwner(ctx context.Context, ownerID uuid.UUID, l
 	return secrets, total, rows.Err()
 }
 
-func (r *secretRepository) Update(ctx context.Context, secret *models.Secret) error {
+func (r *secretRepository) Update(ctx context.Context, secret *server.Secret) error {
 	query := `
         UPDATE secrets
         SET title = $1, encrypted_data = $2, meta = $3, version = version + 1, updated_at = $4
@@ -214,7 +214,7 @@ func (r *secretRepository) HardDelete(ctx context.Context, id, ownerID uuid.UUID
 	return nil
 }
 
-func (r *secretRepository) GetChangedSince(ctx context.Context, ownerID uuid.UUID, sinceTime *time.Time) ([]*models.Secret, error) {
+func (r *secretRepository) GetChangedSince(ctx context.Context, ownerID uuid.UUID, sinceTime *time.Time) ([]*server.Secret, error) {
 	query := `
         SELECT id, owner_id, type, title, encrypted_data, meta, version, created_at, updated_at, deleted_at
         FROM secrets
@@ -228,9 +228,9 @@ func (r *secretRepository) GetChangedSince(ctx context.Context, ownerID uuid.UUI
 	}
 	defer rows.Close()
 
-	var secrets []*models.Secret
+	var secrets []*server.Secret
 	for rows.Next() {
-		secret := &models.Secret{}
+		secret := &server.Secret{}
 		var updatedAt, deletedAt sql.NullTime
 
 		err := rows.Scan(

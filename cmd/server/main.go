@@ -37,7 +37,7 @@ func main() {
 }
 
 func run() error {
-	configPath := flag.String("config", "configs/server.yaml", "path to config file")
+	configPath := flag.String("config", "../../configs/server.yaml", "path to config file")
 	flag.Parse()
 
 	cfg, err := config.Load(*configPath)

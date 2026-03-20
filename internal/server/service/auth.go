@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/galogen13/gophkeeper/internal/pkg/models"
+	"github.com/galogen13/gophkeeper/internal/server"
 	"github.com/galogen13/gophkeeper/internal/server/crypto"
 	"github.com/galogen13/gophkeeper/internal/server/repository"
 
@@ -56,12 +56,12 @@ func (s *AuthService) Register(ctx context.Context, input RegisterInput) (*AuthO
 		return nil, err
 	}
 
-	var user *models.User
+	var user *server.User
 	var tokenPair *crypto.TokenPair
 
 	// В транзакции создаём пользователя и генерируем токены
 	err = s.txManager.WithinTransaction(ctx, func(txCtx context.Context) error {
-		user = &models.User{
+		user = &server.User{
 			ID:           uuid.New(),
 			Email:        input.Email,
 			PasswordHash: []byte(passwordHash),

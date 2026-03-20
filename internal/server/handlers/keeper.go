@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/galogen13/gophkeeper/internal/logger"
-	"github.com/galogen13/gophkeeper/internal/pkg/models"
+	"github.com/galogen13/gophkeeper/internal/server"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
@@ -46,7 +46,7 @@ func (h *KeeperHandler) CreateSecret(ctx context.Context, req *proto.CreateSecre
 
 	secret, err := h.secretService.Create(ctx, service.CreateSecretInput{
 		OwnerID:       userID,
-		Type:          models.SecretType(req.GetType()),
+		Type:          server.SecretType(req.GetType()),
 		Title:         req.GetTitle(),
 		EncryptedData: req.GetEncryptedData(),
 		Meta:          req.GetMeta(),

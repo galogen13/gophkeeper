@@ -9,12 +9,12 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/galogen13/gophkeeper/internal/pkg/models"
 	"github.com/galogen13/gophkeeper/internal/pkg/proto"
+	"github.com/galogen13/gophkeeper/internal/server"
 )
 
 // Конвертация моделей в proto-сообщения
-func secretToProtoSecret(secret *models.Secret) *proto.Secret {
+func secretToProtoSecret(secret *server.Secret) *proto.Secret {
 	pb := proto.Secret_builder{}.Build()
 	pb.SetId(secret.ID.String())
 	pb.SetOwnerId(secret.OwnerID.String())
@@ -34,12 +34,12 @@ func secretToProtoSecret(secret *models.Secret) *proto.Secret {
 }
 
 // Конвертация proto в модель для создания
-func protoSecretToSecretCreate(req *proto.CreateSecretRequest, ownerID uuid.UUID) *models.Secret {
+func protoSecretToSecretCreate(req *proto.CreateSecretRequest, ownerID uuid.UUID) *server.Secret {
 
-	return &models.Secret{
+	return &server.Secret{
 		ID:            uuid.New(),
 		OwnerID:       ownerID,
-		Type:          models.SecretType(req.GetType()),
+		Type:          server.SecretType(req.GetType()),
 		Title:         req.GetTitle(),
 		EncryptedData: req.GetEncryptedData(),
 		Meta:          req.GetMeta(),
@@ -50,9 +50,9 @@ func protoSecretToSecretCreate(req *proto.CreateSecretRequest, ownerID uuid.UUID
 }
 
 // Конвертация proto в модель для обновления
-func protoSecretToSecretUpdate(req *proto.UpdateSecretRequest, ownerID uuid.UUID) *models.Secret {
+func protoSecretToSecretUpdate(req *proto.UpdateSecretRequest, ownerID uuid.UUID) *server.Secret {
 	id, _ := uuid.Parse(req.GetId())
-	return &models.Secret{
+	return &server.Secret{
 		ID:            id,
 		OwnerID:       ownerID,
 		Title:         req.GetTitle(),

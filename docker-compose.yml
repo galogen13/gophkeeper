@@ -1,6 +1,6 @@
 services:
   gophkeeper-postgres:
-    image: postgres:18-alpine3.23
+    image: postgres:17-alpine
     container_name: gophkeeper-postgres
     environment:
       POSTGRES_DB: gophkeeper
@@ -13,6 +13,7 @@ services:
       - "5435:5432"
     volumes:
       - gophkeeper_pg_data:/var/lib/postgresql:Z
+      - ./internal/server/repository/postgres/migrations:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U gophkeeper"]
       interval: 5s

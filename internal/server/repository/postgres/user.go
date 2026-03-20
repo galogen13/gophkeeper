@@ -6,7 +6,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/galogen13/gophkeeper/internal/pkg/models"
+	"github.com/galogen13/gophkeeper/internal/server"
 	"github.com/galogen13/gophkeeper/internal/server/repository"
 
 	"github.com/google/uuid"
@@ -21,7 +21,7 @@ func NewUserRepository(db *sql.DB) *userRepository {
 	return &userRepository{db: db}
 }
 
-func (r *userRepository) Create(ctx context.Context, user *models.User) error {
+func (r *userRepository) Create(ctx context.Context, user *server.User) error {
 	query := `
         INSERT INTO users (id, email, password_hash, created_at)
         VALUES ($1, $2, $3, $4)
@@ -46,14 +46,14 @@ func (r *userRepository) Create(ctx context.Context, user *models.User) error {
 	return nil
 }
 
-func (r *userRepository) GetByEmail(ctx context.Context, email string) (*models.User, error) {
+func (r *userRepository) GetByEmail(ctx context.Context, email string) (*server.User, error) {
 	query := `
         SELECT id, email, password_hash, created_at, updated_at
         FROM users
         WHERE email = $1
     `
 
-	user := &models.User{}
+	user := &server.User{}
 	var updatedAt sql.NullTime
 
 	err := r.db.QueryRowContext(ctx, query, email).Scan(
@@ -74,14 +74,14 @@ func (r *userRepository) GetByEmail(ctx context.Context, email string) (*models.
 	return user, nil
 }
 
-func (r *userRepository) GetByID(ctx context.Context, id uuid.UUID) (*models.User, error) {
+func (r *userRepository) GetByID(ctx context.Context, id uuid.UUID) (*server.User, error) {
 	query := `
         SELECT id, email, password_hash, created_at, updated_at
         FROM users
         WHERE id = $1
     `
 
-	user := &models.User{}
+	user := &server.User{}
 	var updatedAt sql.NullTime
 
 	err := r.db.QueryRowContext(ctx, query, id).Scan(
@@ -102,7 +102,7 @@ func (r *userRepository) GetByID(ctx context.Context, id uuid.UUID) (*models.Use
 	return user, nil
 }
 
-func (r *userRepository) Update(ctx context.Context, user *models.User) error {
+func (r *userRepository) Update(ctx context.Context, user *server.User) error {
 	query := `
         UPDATE users
         SET email = $1, password_hash = $2, updated_at = $3

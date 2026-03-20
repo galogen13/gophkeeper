@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/galogen13/gophkeeper/internal/pkg/models"
+	"github.com/galogen13/gophkeeper/internal/server"
 	"github.com/galogen13/gophkeeper/internal/server/repository"
 	"github.com/google/uuid"
 )
@@ -27,13 +27,13 @@ func NewSecretService(
 
 type CreateSecretInput struct {
 	OwnerID       uuid.UUID
-	Type          models.SecretType
+	Type          server.SecretType
 	Title         string
 	EncryptedData []byte
 	Meta          string
 }
 
-func (s *SecretService) Create(ctx context.Context, input CreateSecretInput) (*models.Secret, error) {
+func (s *SecretService) Create(ctx context.Context, input CreateSecretInput) (*server.Secret, error) {
 	if input.Title == "" {
 		return nil, errors.New("title is required")
 	}
@@ -42,7 +42,7 @@ func (s *SecretService) Create(ctx context.Context, input CreateSecretInput) (*m
 		return nil, errors.New("encrypted data is required")
 	}
 
-	secret := &models.Secret{
+	secret := &server.Secret{
 		ID:            uuid.New(),
 		OwnerID:       input.OwnerID,
 		Type:          input.Type,
@@ -61,11 +61,11 @@ func (s *SecretService) Create(ctx context.Context, input CreateSecretInput) (*m
 	return secret, nil
 }
 
-func (s *SecretService) GetByID(ctx context.Context, id, ownerID uuid.UUID) (*models.Secret, error) {
+func (s *SecretService) GetByID(ctx context.Context, id, ownerID uuid.UUID) (*server.Secret, error) {
 	return s.secretRepo.GetByID(ctx, id, ownerID)
 }
 
-func (s *SecretService) ListByOwner(ctx context.Context, ownerID uuid.UUID, limit, offset int, includeDeleted bool) ([]*models.Secret, int64, error) {
+func (s *SecretService) ListByOwner(ctx context.Context, ownerID uuid.UUID, limit, offset int, includeDeleted bool) ([]*server.Secret, int64, error) {
 	return s.secretRepo.ListByOwner(ctx, ownerID, limit, offset, includeDeleted)
 }
 
@@ -78,7 +78,7 @@ type UpdateSecretInput struct {
 	Version       int64
 }
 
-func (s *SecretService) Update(ctx context.Context, input UpdateSecretInput) (*models.Secret, error) {
+func (s *SecretService) Update(ctx context.Context, input UpdateSecretInput) (*server.Secret, error) {
 	// Получаем существующий секрет для проверки версии
 	existing, err := s.secretRepo.GetByID(ctx, input.ID, input.OwnerID)
 	if err != nil {
@@ -93,7 +93,7 @@ func (s *SecretService) Update(ctx context.Context, input UpdateSecretInput) (*m
 		return nil, repository.ErrVersionMismatch
 	}
 
-	secret := &models.Secret{
+	secret := &server.Secret{
 		ID:            input.ID,
 		OwnerID:       input.OwnerID,
 		Title:         input.Title,
@@ -117,7 +117,7 @@ func (s *SecretService) Delete(ctx context.Context, id, ownerID uuid.UUID, perma
 	return s.secretRepo.Delete(ctx, id, ownerID)
 }
 
-func (s *SecretService) GetChanges(ctx context.Context, ownerID uuid.UUID, lastSync *time.Time) ([]*models.Secret, error) {
+func (s *SecretService) GetChanges(ctx context.Context, ownerID uuid.UUID, lastSync *time.Time) ([]*server.Secret, error) {
 	if lastSync == nil {
 		// Если синхронизация первый раз, возвращаем всё
 		secrets, _, err := s.secretRepo.ListByOwner(ctx, ownerID, 1000, 0, true)
