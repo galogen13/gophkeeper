@@ -36,6 +36,7 @@ func SecretFromProtoSecret(pb *proto.Secret) *client.Secret {
 // Конвертация из клиентской модели в proto для отправки на сервер
 func SecretToProtoSecretCreate(s *client.Secret) *proto.CreateSecretRequest {
 	pb := proto.CreateSecretRequest_builder{}.Build()
+	pb.SetId(s.ID)
 	pb.SetType(proto.SecretType(s.Type))
 	pb.SetTitle(s.Title)
 	pb.SetEncryptedData(s.EncryptedData)

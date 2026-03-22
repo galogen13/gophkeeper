@@ -871,10 +871,11 @@ func (b0 RefreshTokenRequest_builder) Build() *RefreshTokenRequest {
 
 type CreateSecretRequest struct {
 	state                    protoimpl.MessageState `protogen:"opaque.v1"`
-	xxx_hidden_Type          SecretType             `protobuf:"varint,1,opt,name=type,enum=gophkeeper.SecretType"`
-	xxx_hidden_Title         *string                `protobuf:"bytes,2,opt,name=title"`
-	xxx_hidden_EncryptedData []byte                 `protobuf:"bytes,3,opt,name=encrypted_data,json=encryptedData"`
-	xxx_hidden_Meta          *string                `protobuf:"bytes,4,opt,name=meta"`
+	xxx_hidden_Id            *string                `protobuf:"bytes,1,opt,name=id"`
+	xxx_hidden_Type          SecretType             `protobuf:"varint,2,opt,name=type,enum=gophkeeper.SecretType"`
+	xxx_hidden_Title         *string                `protobuf:"bytes,3,opt,name=title"`
+	xxx_hidden_EncryptedData []byte                 `protobuf:"bytes,4,opt,name=encrypted_data,json=encryptedData"`
+	xxx_hidden_Meta          *string                `protobuf:"bytes,5,opt,name=meta"`
 	XXX_raceDetectHookData   protoimpl.RaceDetectHookData
 	XXX_presence             [1]uint32
 	unknownFields            protoimpl.UnknownFields
@@ -906,9 +907,19 @@ func (x *CreateSecretRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
+func (x *CreateSecretRequest) GetId() string {
+	if x != nil {
+		if x.xxx_hidden_Id != nil {
+			return *x.xxx_hidden_Id
+		}
+		return ""
+	}
+	return ""
+}
+
 func (x *CreateSecretRequest) GetType() SecretType {
 	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 0) {
+		if protoimpl.X.Present(&(x.XXX_presence[0]), 1) {
 			return x.xxx_hidden_Type
 		}
 	}
@@ -942,14 +953,19 @@ func (x *CreateSecretRequest) GetMeta() string {
 	return ""
 }
 
+func (x *CreateSecretRequest) SetId(v string) {
+	x.xxx_hidden_Id = &v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 5)
+}
+
 func (x *CreateSecretRequest) SetType(v SecretType) {
 	x.xxx_hidden_Type = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 4)
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 5)
 }
 
 func (x *CreateSecretRequest) SetTitle(v string) {
 	x.xxx_hidden_Title = &v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 4)
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 2, 5)
 }
 
 func (x *CreateSecretRequest) SetEncryptedData(v []byte) {
@@ -957,65 +973,78 @@ func (x *CreateSecretRequest) SetEncryptedData(v []byte) {
 		v = []byte{}
 	}
 	x.xxx_hidden_EncryptedData = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 2, 4)
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 3, 5)
 }
 
 func (x *CreateSecretRequest) SetMeta(v string) {
 	x.xxx_hidden_Meta = &v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 3, 4)
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 4, 5)
 }
 
-func (x *CreateSecretRequest) HasType() bool {
+func (x *CreateSecretRequest) HasId() bool {
 	if x == nil {
 		return false
 	}
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
 }
 
-func (x *CreateSecretRequest) HasTitle() bool {
+func (x *CreateSecretRequest) HasType() bool {
 	if x == nil {
 		return false
 	}
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 1)
 }
 
-func (x *CreateSecretRequest) HasEncryptedData() bool {
+func (x *CreateSecretRequest) HasTitle() bool {
 	if x == nil {
 		return false
 	}
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 2)
 }
 
-func (x *CreateSecretRequest) HasMeta() bool {
+func (x *CreateSecretRequest) HasEncryptedData() bool {
 	if x == nil {
 		return false
 	}
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 3)
 }
 
-func (x *CreateSecretRequest) ClearType() {
+func (x *CreateSecretRequest) HasMeta() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 4)
+}
+
+func (x *CreateSecretRequest) ClearId() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
+	x.xxx_hidden_Id = nil
+}
+
+func (x *CreateSecretRequest) ClearType() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 1)
 	x.xxx_hidden_Type = SecretType_SECRET_TYPE_UNSPECIFIED
 }
 
 func (x *CreateSecretRequest) ClearTitle() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 1)
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 2)
 	x.xxx_hidden_Title = nil
 }
 
 func (x *CreateSecretRequest) ClearEncryptedData() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 2)
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 3)
 	x.xxx_hidden_EncryptedData = nil
 }
 
 func (x *CreateSecretRequest) ClearMeta() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 3)
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 4)
 	x.xxx_hidden_Meta = nil
 }
 
 type CreateSecretRequest_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
+	Id            *string
 	Type          *SecretType
 	Title         *string
 	EncryptedData []byte
@@ -1026,20 +1055,24 @@ func (b0 CreateSecretRequest_builder) Build() *CreateSecretRequest {
 	m0 := &CreateSecretRequest{}
 	b, x := &b0, m0
 	_, _ = b, x
+	if b.Id != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 5)
+		x.xxx_hidden_Id = b.Id
+	}
 	if b.Type != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 4)
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 5)
 		x.xxx_hidden_Type = *b.Type
 	}
 	if b.Title != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 4)
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 2, 5)
 		x.xxx_hidden_Title = b.Title
 	}
 	if b.EncryptedData != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 2, 4)
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 3, 5)
 		x.xxx_hidden_EncryptedData = b.EncryptedData
 	}
 	if b.Meta != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 3, 4)
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 4, 5)
 		x.xxx_hidden_Meta = b.Meta
 	}
 	return m0
@@ -1882,12 +1915,13 @@ const file_internal_pkg_proto_gophkeeper_proto_rawDesc = "" +
 	"\n" +
 	"expires_in\x18\x03 \x01(\x03R\texpiresIn\":\n" +
 	"\x13RefreshTokenRequest\x12#\n" +
-	"\rrefresh_token\x18\x01 \x01(\tR\frefreshToken\"\x92\x01\n" +
-	"\x13CreateSecretRequest\x12*\n" +
-	"\x04type\x18\x01 \x01(\x0e2\x16.gophkeeper.SecretTypeR\x04type\x12\x14\n" +
-	"\x05title\x18\x02 \x01(\tR\x05title\x12%\n" +
-	"\x0eencrypted_data\x18\x03 \x01(\fR\rencryptedData\x12\x12\n" +
-	"\x04meta\x18\x04 \x01(\tR\x04meta\"\"\n" +
+	"\rrefresh_token\x18\x01 \x01(\tR\frefreshToken\"\xa2\x01\n" +
+	"\x13CreateSecretRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12*\n" +
+	"\x04type\x18\x02 \x01(\x0e2\x16.gophkeeper.SecretTypeR\x04type\x12\x14\n" +
+	"\x05title\x18\x03 \x01(\tR\x05title\x12%\n" +
+	"\x0eencrypted_data\x18\x04 \x01(\fR\rencryptedData\x12\x12\n" +
+	"\x04meta\x18\x05 \x01(\tR\x04meta\"\"\n" +
 	"\x10GetSecretRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"n\n" +
 	"\x12ListSecretsRequest\x12\x12\n" +

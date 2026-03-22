@@ -36,6 +36,14 @@ func (h *KeeperHandler) CreateSecret(ctx context.Context, req *proto.CreateSecre
 		return nil, err
 	}
 
+	secretID := uuid.Nil
+	if req.GetId() != "" {
+		secretID, err = uuid.Parse(req.GetId())
+		if err != nil {
+			return nil, status.Error(codes.InvalidArgument, "invalid secret id format")
+		}
+	}
+
 	if req.GetTitle() == "" {
 		return nil, status.Error(codes.InvalidArgument, "title is required")
 	}
@@ -46,6 +54,7 @@ func (h *KeeperHandler) CreateSecret(ctx context.Context, req *proto.CreateSecre
 
 	secret, err := h.secretService.Create(ctx, service.CreateSecretInput{
 		OwnerID:       userID,
+		Id:            secretID,
 		Type:          server.SecretType(req.GetType()),
 		Title:         req.GetTitle(),
 		EncryptedData: req.GetEncryptedData(),

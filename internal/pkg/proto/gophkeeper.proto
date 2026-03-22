@@ -70,10 +70,11 @@ message RefreshTokenRequest {
 }
 
 message CreateSecretRequest {
-  SecretType type = 1;
-  string title = 2;
-  bytes encrypted_data = 3;
-  string meta = 4;
+  string id = 1;
+  SecretType type = 2;
+  string title = 3;
+  bytes encrypted_data = 4;
+  string meta = 5;
 }
 
 message GetSecretRequest {

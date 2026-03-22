@@ -135,13 +135,13 @@ func (r *secretRepository) Update(ctx context.Context, secret *server.Secret) er
 	query := `
         UPDATE secrets
         SET title = $1, encrypted_data = $2, meta = $3, version = version + 1, updated_at = $4
-        WHERE id = $5 AND owner_id = $6 AND version = $7 AND deleted_at IS NULL
+        WHERE id = $5 AND owner_id = $6 AND deleted_at IS NULL
     `
 
 	now := time.Now()
 	result, err := r.db.ExecContext(ctx, query,
 		secret.Title, secret.EncryptedData, secret.Meta, now,
-		secret.ID, secret.OwnerID, secret.Version,
+		secret.ID, secret.OwnerID,
 	)
 
 	if err != nil {

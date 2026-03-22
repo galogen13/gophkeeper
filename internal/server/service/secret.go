@@ -26,6 +26,7 @@ func NewSecretService(
 }
 
 type CreateSecretInput struct {
+	Id            uuid.UUID
 	OwnerID       uuid.UUID
 	Type          server.SecretType
 	Title         string
@@ -43,7 +44,7 @@ func (s *SecretService) Create(ctx context.Context, input CreateSecretInput) (*s
 	}
 
 	secret := &server.Secret{
-		ID:            uuid.New(),
+		ID:            input.Id,
 		OwnerID:       input.OwnerID,
 		Type:          input.Type,
 		Title:         input.Title,
@@ -79,7 +80,7 @@ type UpdateSecretInput struct {
 }
 
 func (s *SecretService) Update(ctx context.Context, input UpdateSecretInput) (*server.Secret, error) {
-	// Получаем существующий секрет для проверки версии
+
 	existing, err := s.secretRepo.GetByID(ctx, input.ID, input.OwnerID)
 	if err != nil {
 		return nil, err
@@ -87,10 +88,6 @@ func (s *SecretService) Update(ctx context.Context, input UpdateSecretInput) (*s
 
 	if existing.DeletedAt != nil {
 		return nil, repository.ErrSecretDeleted
-	}
-
-	if existing.Version != input.Version {
-		return nil, repository.ErrVersionMismatch
 	}
 
 	secret := &server.Secret{
