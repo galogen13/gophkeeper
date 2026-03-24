@@ -50,17 +50,16 @@ func listSecrets() error {
 
 	// Выводим в виде таблицы
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-	fmt.Fprintln(w, "ID\tTITLE\tTYPE\tCREATED\tVERSION")
-	fmt.Fprintln(w, "--\t-----\t----\t-------\t-------")
+	fmt.Fprintln(w, "ID\tTITLE\tTYPE\tCREATED")
+	fmt.Fprintln(w, "--\t-----\t----\t-------")
 
 	for _, s := range secrets {
 		created := s.CreatedAt.Format("2006-01-02 15:04")
-		fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%d\n",
+		fmt.Fprintf(w, "%s\t%s\t%s\t%s\n",
 			truncate(s.ID, 36),
 			truncate(s.Title, 20),
 			s.Type.String(),
 			created,
-			s.Version,
 		)
 	}
 	w.Flush()

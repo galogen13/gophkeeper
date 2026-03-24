@@ -68,7 +68,6 @@ func createTables(db *sql.DB) error {
             title TEXT NOT NULL,
             encrypted_data BLOB NOT NULL,
             meta TEXT,
-            version INTEGER NOT NULL,
             created_at TIMESTAMP NOT NULL,
             updated_at TIMESTAMP,
             is_deleted BOOLEAN NOT NULL DEFAULT 0,
@@ -141,12 +140,12 @@ func (s *SQLiteStorage) SaveSecrets(ctx context.Context, secrets []*client.Secre
 
 	for _, secret := range secrets {
 		query := `INSERT OR REPLACE INTO secrets 
-                  (id, type, title, encrypted_data, meta, version, created_at, updated_at, is_deleted)
-                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                  (id, type, title, encrypted_data, meta, created_at, updated_at, is_deleted)
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
 
 		_, err := tx.ExecContext(ctx, query,
 			secret.ID, secret.Type, secret.Title, secret.EncryptedData,
-			secret.Meta, secret.Version, secret.CreatedAt, secret.UpdatedAt, secret.IsDeleted,
+			secret.Meta, secret.CreatedAt, secret.UpdatedAt, secret.IsDeleted,
 		)
 		if err != nil {
 			return err
@@ -157,7 +156,7 @@ func (s *SQLiteStorage) SaveSecrets(ctx context.Context, secrets []*client.Secre
 }
 
 func (s *SQLiteStorage) GetSecret(ctx context.Context, id string) (*client.Secret, error) {
-	query := `SELECT id, type, title, encrypted_data, meta, version, created_at, updated_at, is_deleted
+	query := `SELECT id, type, title, encrypted_data, meta, created_at, updated_at, is_deleted
               FROM secrets WHERE id = ?`
 
 	var secret client.Secret
@@ -165,7 +164,7 @@ func (s *SQLiteStorage) GetSecret(ctx context.Context, id string) (*client.Secre
 
 	err := s.db.QueryRowContext(ctx, query, id).Scan(
 		&secret.ID, &secret.Type, &secret.Title, &secret.EncryptedData,
-		&secret.Meta, &secret.Version, &secret.CreatedAt, &updatedAt, &secret.IsDeleted,
+		&secret.Meta, &secret.CreatedAt, &updatedAt, &secret.IsDeleted,
 	)
 
 	if errors.Is(err, sql.ErrNoRows) {
@@ -183,7 +182,7 @@ func (s *SQLiteStorage) GetSecret(ctx context.Context, id string) (*client.Secre
 }
 
 func (s *SQLiteStorage) ListSecrets(ctx context.Context) ([]*client.Secret, error) {
-	query := `SELECT id, type, title, encrypted_data, meta, version, created_at, updated_at, is_deleted
+	query := `SELECT id, type, title, encrypted_data, meta, created_at, updated_at, is_deleted
               FROM secrets ORDER BY created_at DESC`
 
 	rows, err := s.db.QueryContext(ctx, query)
@@ -199,7 +198,7 @@ func (s *SQLiteStorage) ListSecrets(ctx context.Context) ([]*client.Secret, erro
 
 		err := rows.Scan(
 			&secret.ID, &secret.Type, &secret.Title, &secret.EncryptedData,
-			&secret.Meta, &secret.Version, &secret.CreatedAt, &updatedAt, &secret.IsDeleted,
+			&secret.Meta, &secret.CreatedAt, &updatedAt, &secret.IsDeleted,
 		)
 		if err != nil {
 			return nil, err
@@ -216,7 +215,7 @@ func (s *SQLiteStorage) ListSecrets(ctx context.Context) ([]*client.Secret, erro
 }
 
 func (s *SQLiteStorage) ListActiveSecrets(ctx context.Context) ([]*client.Secret, error) {
-	query := `SELECT id, type, title, encrypted_data, meta, version, created_at, updated_at, is_deleted
+	query := `SELECT id, type, title, encrypted_data, meta, created_at, updated_at, is_deleted
               FROM secrets WHERE is_deleted = 0 ORDER BY created_at DESC`
 
 	rows, err := s.db.QueryContext(ctx, query)
@@ -232,7 +231,7 @@ func (s *SQLiteStorage) ListActiveSecrets(ctx context.Context) ([]*client.Secret
 
 		err := rows.Scan(
 			&secret.ID, &secret.Type, &secret.Title, &secret.EncryptedData,
-			&secret.Meta, &secret.Version, &secret.CreatedAt, &updatedAt, &secret.IsDeleted,
+			&secret.Meta, &secret.CreatedAt, &updatedAt, &secret.IsDeleted,
 		)
 		if err != nil {
 			return nil, err
@@ -266,30 +265,6 @@ func (s *SQLiteStorage) DeleteSecret(ctx context.Context, id string) error {
 
 	return nil
 }
-
-// func (s *SQLiteStorage) UpdateSecret(ctx context.Context, secret *client.Secret) error {
-// 	query := `UPDATE secrets
-//               SET title = ?, encrypted_data = ?, meta = ?, version = ?, updated_at = ?, is_deleted = ?
-//               WHERE id = ?`
-
-// 	result, err := s.db.ExecContext(ctx, query,
-// 		secret.Title, secret.EncryptedData, secret.Meta,
-// 		secret.Version, secret.UpdatedAt, secret.IsDeleted, secret.ID,
-// 	)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	rows, err := result.RowsAffected()
-// 	if err != nil {
-// 		return err
-// 	}
-// 	if rows == 0 {
-// 		return storage.ErrNotFound
-// 	}
-
-// 	return nil
-// }
 
 // Sync operations
 func (s *SQLiteStorage) GetLastSyncTime(ctx context.Context) (*time.Time, error) {

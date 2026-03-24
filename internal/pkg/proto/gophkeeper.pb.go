@@ -83,7 +83,6 @@ type Secret struct {
 	xxx_hidden_Title         *string                `protobuf:"bytes,4,opt,name=title"`
 	xxx_hidden_EncryptedData []byte                 `protobuf:"bytes,5,opt,name=encrypted_data,json=encryptedData"`
 	xxx_hidden_Meta          *string                `protobuf:"bytes,6,opt,name=meta"`
-	xxx_hidden_Version       int64                  `protobuf:"varint,7,opt,name=version"`
 	xxx_hidden_CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt"`
 	xxx_hidden_UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=updated_at,json=updatedAt"`
 	xxx_hidden_IsDeleted     bool                   `protobuf:"varint,10,opt,name=is_deleted,json=isDeleted"`
@@ -174,13 +173,6 @@ func (x *Secret) GetMeta() string {
 	return ""
 }
 
-func (x *Secret) GetVersion() int64 {
-	if x != nil {
-		return x.xxx_hidden_Version
-	}
-	return 0
-}
-
 func (x *Secret) GetCreatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.xxx_hidden_CreatedAt
@@ -204,22 +196,22 @@ func (x *Secret) GetIsDeleted() bool {
 
 func (x *Secret) SetId(v string) {
 	x.xxx_hidden_Id = &v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 10)
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 9)
 }
 
 func (x *Secret) SetOwnerId(v string) {
 	x.xxx_hidden_OwnerId = &v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 10)
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 9)
 }
 
 func (x *Secret) SetType(v SecretType) {
 	x.xxx_hidden_Type = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 2, 10)
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 2, 9)
 }
 
 func (x *Secret) SetTitle(v string) {
 	x.xxx_hidden_Title = &v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 3, 10)
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 3, 9)
 }
 
 func (x *Secret) SetEncryptedData(v []byte) {
@@ -227,17 +219,12 @@ func (x *Secret) SetEncryptedData(v []byte) {
 		v = []byte{}
 	}
 	x.xxx_hidden_EncryptedData = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 4, 10)
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 4, 9)
 }
 
 func (x *Secret) SetMeta(v string) {
 	x.xxx_hidden_Meta = &v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 5, 10)
-}
-
-func (x *Secret) SetVersion(v int64) {
-	x.xxx_hidden_Version = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 6, 10)
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 5, 9)
 }
 
 func (x *Secret) SetCreatedAt(v *timestamppb.Timestamp) {
@@ -250,7 +237,7 @@ func (x *Secret) SetUpdatedAt(v *timestamppb.Timestamp) {
 
 func (x *Secret) SetIsDeleted(v bool) {
 	x.xxx_hidden_IsDeleted = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 9, 10)
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 8, 9)
 }
 
 func (x *Secret) HasId() bool {
@@ -295,13 +282,6 @@ func (x *Secret) HasMeta() bool {
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 5)
 }
 
-func (x *Secret) HasVersion() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 6)
-}
-
 func (x *Secret) HasCreatedAt() bool {
 	if x == nil {
 		return false
@@ -320,7 +300,7 @@ func (x *Secret) HasIsDeleted() bool {
 	if x == nil {
 		return false
 	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 9)
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 8)
 }
 
 func (x *Secret) ClearId() {
@@ -353,11 +333,6 @@ func (x *Secret) ClearMeta() {
 	x.xxx_hidden_Meta = nil
 }
 
-func (x *Secret) ClearVersion() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 6)
-	x.xxx_hidden_Version = 0
-}
-
 func (x *Secret) ClearCreatedAt() {
 	x.xxx_hidden_CreatedAt = nil
 }
@@ -367,7 +342,7 @@ func (x *Secret) ClearUpdatedAt() {
 }
 
 func (x *Secret) ClearIsDeleted() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 9)
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 8)
 	x.xxx_hidden_IsDeleted = false
 }
 
@@ -380,7 +355,6 @@ type Secret_builder struct {
 	Title         *string
 	EncryptedData []byte
 	Meta          *string
-	Version       *int64
 	CreatedAt     *timestamppb.Timestamp
 	UpdatedAt     *timestamppb.Timestamp
 	IsDeleted     *bool
@@ -391,37 +365,33 @@ func (b0 Secret_builder) Build() *Secret {
 	b, x := &b0, m0
 	_, _ = b, x
 	if b.Id != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 10)
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 9)
 		x.xxx_hidden_Id = b.Id
 	}
 	if b.OwnerId != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 10)
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 9)
 		x.xxx_hidden_OwnerId = b.OwnerId
 	}
 	if b.Type != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 2, 10)
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 2, 9)
 		x.xxx_hidden_Type = *b.Type
 	}
 	if b.Title != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 3, 10)
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 3, 9)
 		x.xxx_hidden_Title = b.Title
 	}
 	if b.EncryptedData != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 4, 10)
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 4, 9)
 		x.xxx_hidden_EncryptedData = b.EncryptedData
 	}
 	if b.Meta != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 5, 10)
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 5, 9)
 		x.xxx_hidden_Meta = b.Meta
-	}
-	if b.Version != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 6, 10)
-		x.xxx_hidden_Version = *b.Version
 	}
 	x.xxx_hidden_CreatedAt = b.CreatedAt
 	x.xxx_hidden_UpdatedAt = b.UpdatedAt
 	if b.IsDeleted != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 9, 10)
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 8, 9)
 		x.xxx_hidden_IsDeleted = *b.IsDeleted
 	}
 	return m0
@@ -1418,7 +1388,6 @@ type UpdateSecretRequest struct {
 	xxx_hidden_Title         *string                `protobuf:"bytes,2,opt,name=title"`
 	xxx_hidden_EncryptedData []byte                 `protobuf:"bytes,3,opt,name=encrypted_data,json=encryptedData"`
 	xxx_hidden_Meta          *string                `protobuf:"bytes,4,opt,name=meta"`
-	xxx_hidden_Version       int64                  `protobuf:"varint,5,opt,name=version"`
 	XXX_raceDetectHookData   protoimpl.RaceDetectHookData
 	XXX_presence             [1]uint32
 	unknownFields            protoimpl.UnknownFields
@@ -1487,21 +1456,14 @@ func (x *UpdateSecretRequest) GetMeta() string {
 	return ""
 }
 
-func (x *UpdateSecretRequest) GetVersion() int64 {
-	if x != nil {
-		return x.xxx_hidden_Version
-	}
-	return 0
-}
-
 func (x *UpdateSecretRequest) SetId(v string) {
 	x.xxx_hidden_Id = &v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 5)
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 4)
 }
 
 func (x *UpdateSecretRequest) SetTitle(v string) {
 	x.xxx_hidden_Title = &v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 5)
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 4)
 }
 
 func (x *UpdateSecretRequest) SetEncryptedData(v []byte) {
@@ -1509,17 +1471,12 @@ func (x *UpdateSecretRequest) SetEncryptedData(v []byte) {
 		v = []byte{}
 	}
 	x.xxx_hidden_EncryptedData = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 2, 5)
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 2, 4)
 }
 
 func (x *UpdateSecretRequest) SetMeta(v string) {
 	x.xxx_hidden_Meta = &v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 3, 5)
-}
-
-func (x *UpdateSecretRequest) SetVersion(v int64) {
-	x.xxx_hidden_Version = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 4, 5)
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 3, 4)
 }
 
 func (x *UpdateSecretRequest) HasId() bool {
@@ -1550,13 +1507,6 @@ func (x *UpdateSecretRequest) HasMeta() bool {
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 3)
 }
 
-func (x *UpdateSecretRequest) HasVersion() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 4)
-}
-
 func (x *UpdateSecretRequest) ClearId() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
 	x.xxx_hidden_Id = nil
@@ -1577,11 +1527,6 @@ func (x *UpdateSecretRequest) ClearMeta() {
 	x.xxx_hidden_Meta = nil
 }
 
-func (x *UpdateSecretRequest) ClearVersion() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 4)
-	x.xxx_hidden_Version = 0
-}
-
 type UpdateSecretRequest_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
@@ -1589,7 +1534,6 @@ type UpdateSecretRequest_builder struct {
 	Title         *string
 	EncryptedData []byte
 	Meta          *string
-	Version       *int64
 }
 
 func (b0 UpdateSecretRequest_builder) Build() *UpdateSecretRequest {
@@ -1597,24 +1541,20 @@ func (b0 UpdateSecretRequest_builder) Build() *UpdateSecretRequest {
 	b, x := &b0, m0
 	_, _ = b, x
 	if b.Id != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 5)
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 4)
 		x.xxx_hidden_Id = b.Id
 	}
 	if b.Title != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 5)
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 4)
 		x.xxx_hidden_Title = b.Title
 	}
 	if b.EncryptedData != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 2, 5)
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 2, 4)
 		x.xxx_hidden_EncryptedData = b.EncryptedData
 	}
 	if b.Meta != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 3, 5)
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 3, 4)
 		x.xxx_hidden_Meta = b.Meta
-	}
-	if b.Version != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 4, 5)
-		x.xxx_hidden_Version = *b.Version
 	}
 	return m0
 }
@@ -1887,15 +1827,14 @@ var File_internal_pkg_proto_gophkeeper_proto protoreflect.FileDescriptor
 const file_internal_pkg_proto_gophkeeper_proto_rawDesc = "" +
 	"\n" +
 	"#internal/pkg/proto/gophkeeper.proto\x12\n" +
-	"gophkeeper\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a!google/protobuf/go_features.proto\"\xdf\x02\n" +
+	"gophkeeper\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a!google/protobuf/go_features.proto\"\xc5\x02\n" +
 	"\x06Secret\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bowner_id\x18\x02 \x01(\tR\aownerId\x12*\n" +
 	"\x04type\x18\x03 \x01(\x0e2\x16.gophkeeper.SecretTypeR\x04type\x12\x14\n" +
 	"\x05title\x18\x04 \x01(\tR\x05title\x12%\n" +
 	"\x0eencrypted_data\x18\x05 \x01(\fR\rencryptedData\x12\x12\n" +
-	"\x04meta\x18\x06 \x01(\tR\x04meta\x12\x18\n" +
-	"\aversion\x18\a \x01(\x03R\aversion\x129\n" +
+	"\x04meta\x18\x06 \x01(\tR\x04meta\x129\n" +
 	"\n" +
 	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
@@ -1931,13 +1870,12 @@ const file_internal_pkg_proto_gophkeeper_proto_rawDesc = "" +
 	"\x13ListSecretsResponse\x12,\n" +
 	"\asecrets\x18\x01 \x03(\v2\x12.gophkeeper.SecretR\asecrets\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x05R\x05total\x12\x12\n" +
-	"\x04page\x18\x03 \x01(\x05R\x04page\"\x90\x01\n" +
+	"\x04page\x18\x03 \x01(\x05R\x04page\"v\n" +
 	"\x13UpdateSecretRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12%\n" +
 	"\x0eencrypted_data\x18\x03 \x01(\fR\rencryptedData\x12\x12\n" +
-	"\x04meta\x18\x04 \x01(\tR\x04meta\x12\x18\n" +
-	"\aversion\x18\x05 \x01(\x03R\aversion\"C\n" +
+	"\x04meta\x18\x04 \x01(\tR\x04meta\"C\n" +
 	"\x13DeleteSecretRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1c\n" +
 	"\tpermanent\x18\x02 \x01(\bR\tpermanent\"c\n" +

@@ -42,7 +42,6 @@ message Secret {
   string title = 4;
   bytes encrypted_data = 5;
   string meta = 6;           // JSON с метаинформацией
-  int64 version = 7;
   google.protobuf.Timestamp created_at = 8;
   google.protobuf.Timestamp updated_at = 9;
   bool is_deleted = 10;
@@ -98,7 +97,6 @@ message UpdateSecretRequest {
   string title = 2;
   bytes encrypted_data = 3;
   string meta = 4;
-  int64 version = 5;  // для оптимистичной блокировки
 }
 
 message DeleteSecretRequest {

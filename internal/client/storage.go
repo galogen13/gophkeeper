@@ -12,8 +12,7 @@ type Storage interface {
 	ClearAuth(ctx context.Context) error
 
 	// Secret operations
-	// SaveSecret(ctx context.Context, secret *Secret) error
-	SaveSecrets(ctx context.Context, secrets []*Secret) error // для синхронизации
+	SaveSecrets(ctx context.Context, secrets []*Secret) error
 	GetSecret(ctx context.Context, id string) (*Secret, error)
 	ListSecrets(ctx context.Context) ([]*Secret, error)
 	ListActiveSecrets(ctx context.Context) ([]*Secret, error) // только не удалённые

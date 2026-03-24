@@ -18,7 +18,6 @@ CREATE TABLE secrets (
     title VARCHAR(255) NOT NULL,
     encrypted_data BYTEA NOT NULL,
     meta TEXT,  -- JSON метаинформация
-    version BIGINT NOT NULL DEFAULT 1,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE,
     deleted_at TIMESTAMP WITH TIME ZONE,  -- soft delete

@@ -22,7 +22,6 @@ func secretToProtoSecret(secret *server.Secret) *proto.Secret {
 	pb.SetTitle(secret.Title)
 	pb.SetEncryptedData(secret.EncryptedData)
 	pb.SetMeta(secret.Meta)
-	pb.SetVersion(secret.Version)
 	pb.SetCreatedAt(timestamppb.New(secret.CreatedAt))
 	pb.SetIsDeleted(secret.DeletedAt != nil)
 
@@ -43,7 +42,6 @@ func protoSecretToSecretCreate(req *proto.CreateSecretRequest, ownerID uuid.UUID
 		Title:         req.GetTitle(),
 		EncryptedData: req.GetEncryptedData(),
 		Meta:          req.GetMeta(),
-		Version:       1,
 		CreatedAt:     time.Now(),
 	}
 
@@ -58,7 +56,6 @@ func protoSecretToSecretUpdate(req *proto.UpdateSecretRequest, ownerID uuid.UUID
 		Title:         req.GetTitle(),
 		EncryptedData: req.GetEncryptedData(),
 		Meta:          req.GetMeta(),
-		Version:       req.GetVersion(),
 	}
 }
 

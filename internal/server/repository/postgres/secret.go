@@ -22,20 +22,17 @@ func NewSecretRepository(db *sql.DB) *secretRepository {
 
 func (r *secretRepository) Create(ctx context.Context, secret *server.Secret) error {
 	query := `
-        INSERT INTO secrets (id, owner_id, type, title, encrypted_data, meta, version, created_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        INSERT INTO secrets (id, owner_id, type, title, encrypted_data, meta, created_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
     `
 
 	if secret.ID == uuid.Nil {
 		secret.ID = uuid.New()
 	}
-	if secret.Version == 0 {
-		secret.Version = 1
-	}
 
 	_, err := r.db.ExecContext(ctx, query,
 		secret.ID, secret.OwnerID, secret.Type, secret.Title,
-		secret.EncryptedData, secret.Meta, secret.Version, secret.CreatedAt,
+		secret.EncryptedData, secret.Meta, secret.CreatedAt,
 	)
 
 	return err
@@ -43,7 +40,7 @@ func (r *secretRepository) Create(ctx context.Context, secret *server.Secret) er
 
 func (r *secretRepository) GetByID(ctx context.Context, id, ownerID uuid.UUID) (*server.Secret, error) {
 	query := `
-        SELECT id, owner_id, type, title, encrypted_data, meta, version, created_at, updated_at, deleted_at
+        SELECT id, owner_id, type, title, encrypted_data, meta, created_at, updated_at, deleted_at
         FROM secrets
         WHERE id = $1 AND owner_id = $2
     `
@@ -53,7 +50,7 @@ func (r *secretRepository) GetByID(ctx context.Context, id, ownerID uuid.UUID) (
 
 	err := r.db.QueryRowContext(ctx, query, id, ownerID).Scan(
 		&secret.ID, &secret.OwnerID, &secret.Type, &secret.Title,
-		&secret.EncryptedData, &secret.Meta, &secret.Version,
+		&secret.EncryptedData, &secret.Meta,
 		&secret.CreatedAt, &updatedAt, &deletedAt,
 	)
 
@@ -89,7 +86,7 @@ func (r *secretRepository) ListByOwner(ctx context.Context, ownerID uuid.UUID, l
 
 	// Затем получаем данные с пагинацией
 	query := `
-        SELECT id, owner_id, type, title, encrypted_data, meta, version, created_at, updated_at, deleted_at
+        SELECT id, owner_id, type, title, encrypted_data, meta, created_at, updated_at, deleted_at
         FROM secrets
         WHERE owner_id = $1
     `
@@ -111,7 +108,7 @@ func (r *secretRepository) ListByOwner(ctx context.Context, ownerID uuid.UUID, l
 
 		err := rows.Scan(
 			&secret.ID, &secret.OwnerID, &secret.Type, &secret.Title,
-			&secret.EncryptedData, &secret.Meta, &secret.Version,
+			&secret.EncryptedData, &secret.Meta,
 			&secret.CreatedAt, &updatedAt, &deletedAt,
 		)
 		if err != nil {
@@ -134,7 +131,7 @@ func (r *secretRepository) ListByOwner(ctx context.Context, ownerID uuid.UUID, l
 func (r *secretRepository) Update(ctx context.Context, secret *server.Secret) error {
 	query := `
         UPDATE secrets
-        SET title = $1, encrypted_data = $2, meta = $3, version = version + 1, updated_at = $4
+        SET title = $1, encrypted_data = $2, meta = $3, updated_at = $4
         WHERE id = $5 AND owner_id = $6 AND deleted_at IS NULL
     `
 
@@ -165,7 +162,6 @@ func (r *secretRepository) Update(ctx context.Context, secret *server.Secret) er
 		return repository.ErrVersionMismatch
 	}
 
-	secret.Version++
 	secret.UpdatedAt = &now
 	return nil
 }
@@ -216,7 +212,7 @@ func (r *secretRepository) HardDelete(ctx context.Context, id, ownerID uuid.UUID
 
 func (r *secretRepository) GetChangedSince(ctx context.Context, ownerID uuid.UUID, sinceTime *time.Time) ([]*server.Secret, error) {
 	query := `
-        SELECT id, owner_id, type, title, encrypted_data, meta, version, created_at, updated_at, deleted_at
+        SELECT id, owner_id, type, title, encrypted_data, meta, created_at, updated_at, deleted_at
         FROM secrets
         WHERE owner_id = $1 AND (created_at > $2 OR updated_at > $2 OR deleted_at > $2)
         ORDER BY updated_at ASC
@@ -235,7 +231,7 @@ func (r *secretRepository) GetChangedSince(ctx context.Context, ownerID uuid.UUI
 
 		err := rows.Scan(
 			&secret.ID, &secret.OwnerID, &secret.Type, &secret.Title,
-			&secret.EncryptedData, &secret.Meta, &secret.Version,
+			&secret.EncryptedData, &secret.Meta,
 			&secret.CreatedAt, &updatedAt, &deletedAt,
 		)
 		if err != nil {

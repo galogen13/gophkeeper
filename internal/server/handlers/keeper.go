@@ -153,7 +153,6 @@ func (h *KeeperHandler) UpdateSecret(ctx context.Context, req *proto.UpdateSecre
 		Title:         req.GetTitle(),
 		EncryptedData: req.GetEncryptedData(),
 		Meta:          req.GetMeta(),
-		Version:       req.GetVersion(),
 	})
 	if err != nil {
 		logger.Log.Error("failed to update secret", zap.Error(err), zap.String("secret_id", req.GetId()))

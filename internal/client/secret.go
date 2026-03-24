@@ -36,7 +36,6 @@ type Secret struct {
 	Title         string     `json:"title"`
 	EncryptedData []byte     `json:"encrypted_data"` // данные уже зашифрованы клиентом
 	Meta          string     `json:"meta"`           // JSON метаинформация
-	Version       int64      `json:"version"`
 	CreatedAt     time.Time  `json:"created_at"`
 	UpdatedAt     *time.Time `json:"updated_at,omitempty"`
 	IsDeleted     bool       `json:"is_deleted"`

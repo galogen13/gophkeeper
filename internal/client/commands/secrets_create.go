@@ -67,7 +67,6 @@ Examples:
 func createSecret(cmd *cobra.Command, secretType string) error {
 	ctx := context.Background()
 
-	// Проверяем аутентификацию
 	auth, err := store.GetAuth(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get auth: %w", err)
@@ -76,14 +75,11 @@ func createSecret(cmd *cobra.Command, secretType string) error {
 		return fmt.Errorf("not logged in. Please run 'gophkeeper auth login' first")
 	}
 
-	// Получаем общие параметры
 	title, _ := cmd.Flags().GetString("title")
 	meta, _ := cmd.Flags().GetString("meta")
 
-	// Определяем тип секрета
 	var secretTypeInt client.SecretType
 	var data []byte
-	//var metaMap map[string]interface{}
 
 	switch secretType {
 	case "password", "credentials":
@@ -106,35 +102,25 @@ func createSecret(cmd *cobra.Command, secretType string) error {
 		return err
 	}
 
-	// Создаём секрет
 	secret := &client.Secret{
 		ID:            uuid.New().String(),
 		Type:          secretTypeInt,
 		Title:         title,
 		EncryptedData: data, // TODO: зашифровать данные мастер-ключом
 		Meta:          meta,
-		Version:       1,
 		CreatedAt:     time.Now(),
 		IsDeleted:     false,
 	}
 
-	// Сохраняем локально
 	if err := store.SaveSecrets(ctx, []*client.Secret{secret}); err != nil {
 		return fmt.Errorf("failed to save secret locally: %w", err)
 	}
 
-	// Отправляем на сервер
 	authCtx := grpcClient.WithAuth(ctx)
 	resp, err := grpcClient.GetKeeperClient().CreateSecret(authCtx, grpc.SecretToProtoSecretCreate(secret))
 	if err != nil {
 		return fmt.Errorf("failed to create secret on server: %w", err)
 	}
-
-	// // Обновляем ID из ответа сервера
-	// secret.ID = resp.GetId()
-	// if err := store.SaveSecrets(ctx, []*client.Secret{secret}); err != nil {
-	// 	return fmt.Errorf("failed to update secret with server ID: %w", err)
-	// }
 
 	fmt.Printf("Secret created successfully!\n")
 	fmt.Printf("ID: %s\n", resp.GetId())
@@ -147,7 +133,6 @@ func createCredentialsData(cmd *cobra.Command) ([]byte, error) {
 	password, _ := cmd.Flags().GetString("password")
 	url, _ := cmd.Flags().GetString("url")
 
-	// Если пароль не указан в флаге, запрашиваем интерактивно
 	if password == "" {
 		fmt.Print("Enter password: ")
 		passBytes, err := term.ReadPassword(int(syscall.Stdin))
@@ -195,7 +180,6 @@ func createTextData(cmd *cobra.Command) ([]byte, error) {
 
 	if content == "" {
 		fmt.Println("Enter text content (Ctrl+D to finish):")
-		// Читаем многострочный ввод
 		var builder strings.Builder
 		scanner := bufio.NewScanner(os.Stdin)
 		for scanner.Scan() {
@@ -219,7 +203,6 @@ func createBinaryData(cmd *cobra.Command) ([]byte, error) {
 		return nil, fmt.Errorf("file path is required for binary type")
 	}
 
-	// Читаем файл
 	fileData, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read file: %w", err)
@@ -231,6 +214,5 @@ func createBinaryData(cmd *cobra.Command) ([]byte, error) {
 		Size:        int64(len(fileData)),
 	}
 
-	// Возвращаем сами бинарные данные (они будут зашифрованы)
 	return json.Marshal(data)
 }

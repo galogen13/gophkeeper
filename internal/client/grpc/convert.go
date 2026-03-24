@@ -20,7 +20,6 @@ func SecretFromProtoSecret(pb *proto.Secret) *client.Secret {
 		Title:         pb.GetTitle(),
 		EncryptedData: pb.GetEncryptedData(),
 		Meta:          pb.GetMeta(),
-		Version:       pb.GetVersion(),
 		CreatedAt:     pb.GetCreatedAt().AsTime(),
 		IsDeleted:     pb.GetIsDeleted(),
 	}
@@ -50,7 +49,6 @@ func SecretToProtoSecretUpdate(s *client.Secret) *proto.UpdateSecretRequest {
 	pb.SetTitle(s.Title)
 	pb.SetEncryptedData(s.EncryptedData)
 	pb.SetMeta(s.Meta)
-	pb.SetVersion(s.Version)
 	return pb
 }
 

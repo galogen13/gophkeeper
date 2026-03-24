@@ -50,7 +50,6 @@ func (s *SecretService) Create(ctx context.Context, input CreateSecretInput) (*s
 		Title:         input.Title,
 		EncryptedData: input.EncryptedData,
 		Meta:          input.Meta,
-		Version:       1,
 		CreatedAt:     time.Now(),
 	}
 
@@ -76,7 +75,6 @@ type UpdateSecretInput struct {
 	Title         string
 	EncryptedData []byte
 	Meta          string
-	Version       int64
 }
 
 func (s *SecretService) Update(ctx context.Context, input UpdateSecretInput) (*server.Secret, error) {
@@ -96,7 +94,6 @@ func (s *SecretService) Update(ctx context.Context, input UpdateSecretInput) (*s
 		Title:         input.Title,
 		EncryptedData: input.EncryptedData,
 		Meta:          input.Meta,
-		Version:       input.Version,
 	}
 
 	err = s.secretRepo.Update(ctx, secret)

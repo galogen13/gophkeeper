@@ -1,8 +1,7 @@
 package main
 
 import (
-	"fmt"
-	"os"
+	"log"
 
 	"github.com/galogen13/gophkeeper/internal/buildinfo"
 	"github.com/galogen13/gophkeeper/internal/client/commands"
@@ -15,7 +14,6 @@ var (
 
 func main() {
 	if err := commands.NewRootCmd(buildVersion, buildDate).Execute(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
 }

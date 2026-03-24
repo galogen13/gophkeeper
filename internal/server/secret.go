@@ -38,7 +38,6 @@ type Secret struct {
 	Title         string     `json:"title"`
 	EncryptedData []byte     `json:"encrypted_data"`
 	Meta          string     `json:"meta"` // JSON строка с метаинформацией
-	Version       int64      `json:"version"`
 	CreatedAt     time.Time  `json:"created_at"`
 	UpdatedAt     *time.Time `json:"updated_at,omitempty"`
 	DeletedAt     *time.Time `json:"deleted_at,omitempty"` // soft delete

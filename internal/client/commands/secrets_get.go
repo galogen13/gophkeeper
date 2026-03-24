@@ -46,7 +46,6 @@ func getSecret(id string) error {
 	fmt.Fprintf(w, "ID:\t%s\n", secret.ID)
 	fmt.Fprintf(w, "Title:\t%s\n", secret.Title)
 	fmt.Fprintf(w, "Type:\t%s\n", secret.Type.String())
-	fmt.Fprintf(w, "Version:\t%d\n", secret.Version)
 	fmt.Fprintf(w, "Created:\t%s\n", secret.CreatedAt.Format("2006-01-02 15:04:05"))
 	if secret.UpdatedAt != nil {
 		fmt.Fprintf(w, "Updated:\t%s\n", secret.UpdatedAt.Format("2006-01-02 15:04:05"))

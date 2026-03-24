@@ -27,7 +27,6 @@ func NewSecretsDeleteCmd() *cobra.Command {
 func deleteSecret(id string) error {
 	ctx := context.Background()
 
-	// Проверяем аутентификацию
 	auth, err := store.GetAuth(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get auth: %w", err)
@@ -36,7 +35,6 @@ func deleteSecret(id string) error {
 		return fmt.Errorf("not logged in")
 	}
 
-	// Подтверждение
 	fmt.Printf("Are you sure you want to delete secret %s? (y/N): ", id)
 	var response string
 	fmt.Scanln(&response)
@@ -46,12 +44,10 @@ func deleteSecret(id string) error {
 		return nil
 	}
 
-	// Помечаем как удалённое локально
 	if err := store.DeleteSecret(ctx, id); err != nil {
 		return fmt.Errorf("failed to delete secret locally: %w", err)
 	}
 
-	// Удаляем на сервере
 	delSecret := &client.DeleteSecret{ID: id}
 	authCtx := grpcClient.WithAuth(ctx)
 	_, err = grpcClient.GetKeeperClient().DeleteSecret(authCtx, grpc.DeleteSecretToProtoDeleteSecret(delSecret))
