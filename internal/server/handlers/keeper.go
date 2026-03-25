@@ -64,7 +64,7 @@ func (h *KeeperHandler) CreateSecret(ctx context.Context, req *proto.CreateSecre
 		logger.Log.Error("failed to create secret", zap.Error(err), zap.String("user_id", userID.String()))
 		return nil, mapErrorToGRPC(err)
 	}
-	logger.Log.Info("failed to create secret", zap.String("user_id", userID.String()), zap.String("secret_id", secret.ID.String()))
+
 	return secretToProtoSecret(secret), nil
 }
 

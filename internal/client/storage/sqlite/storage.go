@@ -130,29 +130,61 @@ func (s *SQLiteStorage) ClearAuth(ctx context.Context) error {
 	return err
 }
 
-// Secret operations
+// SaveSecrets массово сохраняет секреты (для синхронизации)
 func (s *SQLiteStorage) SaveSecrets(ctx context.Context, secrets []*client.Secret) error {
+	if len(secrets) == 0 {
+		return nil // ничего сохранять
+	}
+
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
 	defer tx.Rollback()
 
-	for _, secret := range secrets {
-		query := `INSERT OR REPLACE INTO secrets 
-                  (id, type, title, encrypted_data, meta, created_at, updated_at, is_deleted)
-                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+	// Подготавливаем запрос один раз для всех записей (оптимизация)
+	stmt, err := tx.PrepareContext(ctx, `
+        INSERT OR REPLACE INTO secrets 
+        (id, type, title, encrypted_data, meta, created_at, updated_at, is_deleted)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `)
+	if err != nil {
+		return fmt.Errorf("failed to prepare statement: %w", err)
+	}
+	defer stmt.Close()
 
-		_, err := tx.ExecContext(ctx, query,
-			secret.ID, secret.Type, secret.Title, secret.EncryptedData,
-			secret.Meta, secret.CreatedAt, secret.UpdatedAt, secret.IsDeleted,
+	for _, secret := range secrets {
+
+		if secret.ID == "" {
+			return fmt.Errorf("secret ID is required")
+		}
+
+		updatedAt := secret.UpdatedAt
+		if updatedAt == nil {
+			t := secret.CreatedAt
+			updatedAt = &t
+		}
+
+		_, err := stmt.ExecContext(ctx,
+			secret.ID,
+			secret.Type,
+			secret.Title,
+			secret.EncryptedData,
+			secret.Meta,
+			secret.CreatedAt,
+			updatedAt,
+			secret.IsDeleted,
 		)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to save secret %s: %w", secret.ID, err)
 		}
 	}
 
-	return tx.Commit()
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return nil
 }
 
 func (s *SQLiteStorage) GetSecret(ctx context.Context, id string) (*client.Secret, error) {

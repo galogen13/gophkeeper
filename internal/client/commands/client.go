@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	"github.com/galogen13/gophkeeper/internal/client"
@@ -23,31 +22,6 @@ var (
 
 	keyManager *crypto.MasterKeyManager
 )
-
-func NewRootCmd(version, date string) *cobra.Command {
-	rootCmd := &cobra.Command{
-		Use:   "gophkeeper",
-		Short: "GophKeeper - secure password manager",
-		Long: `GophKeeper is a client-server system for securely storing 
-passwords, bank cards, and other private data.`,
-		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			return initializeClient()
-		},
-		PersistentPostRunE: func(cmd *cobra.Command, args []string) error {
-			return closeClient()
-		},
-	}
-
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "../../configs/client.yaml", "config file (default is $HOME/.gophkeeper/config.yaml)")
-
-	// Подкоманды
-	rootCmd.AddCommand(NewAuthCmd())
-	rootCmd.AddCommand(NewSecretsCmd())
-	rootCmd.AddCommand(NewSyncCmd())
-	rootCmd.AddCommand(NewVersionCmd(version, date))
-
-	return rootCmd
-}
 
 func initializeClient() error {
 	if err := initConfig(); err != nil {

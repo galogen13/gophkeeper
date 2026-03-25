@@ -12,8 +12,14 @@ var (
 	buildDate    = buildinfo.BuildInfoNotAvaluable
 )
 
+// func main() {
+// 	if err := commands.NewRootCmd(buildVersion, buildDate).Execute(); err != nil {
+// 		log.Fatal(err)
+// 	}
+// }
+
 func main() {
-	if err := commands.NewRootCmd(buildVersion, buildDate).Execute(); err != nil {
+	if err := commands.RunInteractiveMode(buildVersion, buildDate); err != nil {
 		log.Fatal(err)
 	}
 }
