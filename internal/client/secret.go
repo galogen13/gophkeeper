@@ -1,0 +1,74 @@
+package client
+
+import (
+	"time"
+)
+
+type SecretType int
+
+const (
+	SecretTypeUnknown SecretType = iota
+	SecretTypeCredentials
+	SecretTypeText
+	SecretTypeBinary
+	SecretTypeBankCard
+)
+
+func (s SecretType) String() string {
+	switch s {
+	case SecretTypeCredentials:
+		return "credentials"
+	case SecretTypeText:
+		return "text"
+	case SecretTypeBinary:
+		return "binary"
+	case SecretTypeBankCard:
+		return "bank_card"
+	default:
+		return "unknown"
+	}
+}
+
+// Secret — локальное представление секрета
+type Secret struct {
+	ID            string     `json:"id"`
+	Type          SecretType `json:"type"`
+	Title         string     `json:"title"`
+	EncryptedData []byte     `json:"encrypted_data"` // данные уже зашифрованы клиентом
+	Meta          string     `json:"meta"`           // JSON метаинформация
+	CreatedAt     time.Time  `json:"created_at"`
+	UpdatedAt     *time.Time `json:"updated_at,omitempty"`
+	IsDeleted     bool       `json:"is_deleted"`
+}
+
+type DeleteSecret struct {
+	ID        string `json:"id"`
+	Permanent bool   `json:"permanent"`
+}
+
+// Данные для разных типов (в расшифрованном виде)
+type CredentialsData struct {
+	Login    string `json:"login"`
+	Password string `json:"password"`
+	URL      string `json:"url,omitempty"`
+}
+
+type BankCardData struct {
+	CardNumber  string `json:"card_number"`
+	CardHolder  string `json:"card_holder"`
+	ExpiryMonth string `json:"expiry_month"`
+	ExpiryYear  string `json:"expiry_year"`
+	CVV         string `json:"cvv,omitempty"`
+	BankName    string `json:"bank_name,omitempty"`
+}
+
+type TextData struct {
+	Content string `json:"content"`
+}
+
+type BinaryData struct {
+	Filename    string `json:"filename"`
+	ContentType string `json:"content_type"`
+	Size        int64  `json:"size"`
+	// сами данные хранятся в EncryptedData
+}
