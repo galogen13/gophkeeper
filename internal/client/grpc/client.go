@@ -42,11 +42,6 @@ func NewClient(cfg Config) (*Client, error) {
 		MinConnectTimeout: cfg.Timeout * time.Second,
 	}))
 
-	// conn, err := grpc.Dial(cfg.ServerAddress, opts...)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("failed to connect: %w", err)
-	// }
-
 	conn, err := grpc.NewClient(cfg.ServerAddress, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("gRPC client init failure: %w", err)

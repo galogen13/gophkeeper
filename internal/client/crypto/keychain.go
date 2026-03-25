@@ -5,13 +5,13 @@ import (
 	"path/filepath"
 )
 
-// Keychain управляет сохранением мастер-ключа
+// Keychain управляет сохранением криптографических материалов на диске
 type Keychain struct {
 	keyDir string
 }
 
+// NewKeychain создаёт новый keychain в домашней директории
 func NewKeychain() (*Keychain, error) {
-	// Определяем директорию для ключей
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
@@ -23,6 +23,12 @@ func NewKeychain() (*Keychain, error) {
 	}
 
 	return &Keychain{keyDir: keyDir}, nil
+}
+
+// NewKeychainForTest создаёт keychain для тестов (с указанной директорией)
+func NewKeychainForTest(dir string) *Keychain {
+	os.MkdirAll(dir, 0700)
+	return &Keychain{keyDir: dir}
 }
 
 // SaveSalt сохраняет соль для мастер-ключа
@@ -63,7 +69,12 @@ func (k *Keychain) LoadToken() (string, error) {
 	return string(token), nil
 }
 
-// Clear очищает все данные
+// Clear очищает все данные (удаляет директорию)
 func (k *Keychain) Clear() error {
 	return os.RemoveAll(k.keyDir)
+}
+
+// GetKeyDir возвращает путь к директории (для тестов)
+func (k *Keychain) GetKeyDir() string {
+	return k.keyDir
 }

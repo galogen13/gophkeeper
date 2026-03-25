@@ -44,6 +44,11 @@ func updateSecret(id string) error {
 		return fmt.Errorf("not logged in. Please run 'gophkeeper auth login' first")
 	}
 
+	mk := keyManager.GetMasterKey()
+	if mk == nil {
+		return fmt.Errorf("master key not loaded. Please login again")
+	}
+
 	// Получаем существующий секрет из локального хранилища
 	secret, err := store.GetSecret(ctx, id)
 	if err != nil {
@@ -86,7 +91,12 @@ func updateSecret(id string) error {
 
 	// Если данные были обновлены, заменяем
 	if updatedData != nil {
-		secret.EncryptedData = updatedData
+
+		encryptedData, err := mk.Encrypt(updatedData)
+		if err != nil {
+			return fmt.Errorf("failed to encrypt data: %w", err)
+		}
+		secret.EncryptedData = encryptedData
 	}
 
 	// Обновляем время изменения

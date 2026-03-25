@@ -75,6 +75,11 @@ func createSecret(cmd *cobra.Command, secretType string) error {
 		return fmt.Errorf("not logged in. Please run 'gophkeeper auth login' first")
 	}
 
+	mk := keyManager.GetMasterKey()
+	if mk == nil {
+		return fmt.Errorf("master key not loaded. Please login again")
+	}
+
 	title, _ := cmd.Flags().GetString("title")
 	meta, _ := cmd.Flags().GetString("meta")
 
@@ -102,11 +107,16 @@ func createSecret(cmd *cobra.Command, secretType string) error {
 		return err
 	}
 
+	encryptedData, err := mk.Encrypt(data)
+	if err != nil {
+		return fmt.Errorf("failed to encrypt data: %w", err)
+	}
+
 	secret := &client.Secret{
 		ID:            uuid.New().String(),
 		Type:          secretTypeInt,
 		Title:         title,
-		EncryptedData: data, // TODO: зашифровать данные мастер-ключом
+		EncryptedData: encryptedData,
 		Meta:          meta,
 		CreatedAt:     time.Now(),
 		IsDeleted:     false,

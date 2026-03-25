@@ -34,10 +34,20 @@ func getSecret(id string) error {
 		return fmt.Errorf("not logged in")
 	}
 
+	mk := keyManager.GetMasterKey()
+	if mk == nil {
+		return fmt.Errorf("master key not loaded. Please login again")
+	}
+
 	// Получаем секрет из локального хранилища
 	secret, err := store.GetSecret(ctx, id)
 	if err != nil {
 		return fmt.Errorf("failed to get secret: %w", err)
+	}
+
+	decryptedData, err := mk.Decrypt(secret.EncryptedData)
+	if err != nil {
+		return fmt.Errorf("failed to decrypt data: %w", err)
 	}
 
 	// Выводим информацию
@@ -55,7 +65,7 @@ func getSecret(id string) error {
 	switch secret.Type {
 	case client.SecretTypeCredentials:
 		var data client.CredentialsData
-		if err := json.Unmarshal(secret.EncryptedData, &data); err == nil {
+		if err := json.Unmarshal(decryptedData, &data); err == nil {
 			fmt.Fprintf(w, "\nCredentials:\n")
 			fmt.Fprintf(w, "  Login:\t%s\n", data.Login)
 			fmt.Fprintf(w, "  Password:\t%s\n", data.Password)
@@ -65,7 +75,7 @@ func getSecret(id string) error {
 		}
 	case client.SecretTypeBankCard:
 		var data client.BankCardData
-		if err := json.Unmarshal(secret.EncryptedData, &data); err == nil {
+		if err := json.Unmarshal(decryptedData, &data); err == nil {
 			fmt.Fprintf(w, "\nBank Card:\n")
 			fmt.Fprintf(w, "  Number:\t%s\n", maskCardNumber(data.CardNumber))
 			fmt.Fprintf(w, "  Holder:\t%s\n", data.CardHolder)
@@ -76,12 +86,12 @@ func getSecret(id string) error {
 		}
 	case client.SecretTypeText:
 		var data client.TextData
-		if err := json.Unmarshal(secret.EncryptedData, &data); err == nil {
+		if err := json.Unmarshal(decryptedData, &data); err == nil {
 			fmt.Fprintf(w, "\nContent:\n%s\n", data.Content)
 		}
 	case client.SecretTypeBinary:
 		var data client.BinaryData
-		if err := json.Unmarshal(secret.EncryptedData, &data); err == nil {
+		if err := json.Unmarshal(decryptedData, &data); err == nil {
 			fmt.Fprintf(w, "\nBinary file:\n")
 			fmt.Fprintf(w, "  Filename:\t%s\n", data.Filename)
 			fmt.Fprintf(w, "  Size:\t%d bytes\n", data.Size)

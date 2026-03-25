@@ -46,6 +46,24 @@ func NewRegisterCmd() *cobra.Command {
 				return err
 			}
 
+			fmt.Print("Enter master password (for encryption, different from login password): ")
+			masterPass, err := term.ReadPassword(int(syscall.Stdin))
+			fmt.Println()
+			if err != nil {
+				return err
+			}
+
+			fmt.Print("Confirm master password: ")
+			confirmPass, err := term.ReadPassword(int(syscall.Stdin))
+			fmt.Println()
+			if err != nil {
+				return err
+			}
+
+			if string(masterPass) != string(confirmPass) {
+				return fmt.Errorf("master passwords do not match")
+			}
+
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 
@@ -60,9 +78,12 @@ func NewRegisterCmd() *cobra.Command {
 				return fmt.Errorf("registration failed: %w", err)
 			}
 
+			if err := keyManager.InitMasterKey(string(masterPass)); err != nil {
+				return fmt.Errorf("failed to init master key: %w", err)
+			}
+
 			fmt.Println("Registration successful!")
 
-			// Сервер не возвращает user_id при регистрации, но он нам и не особо нужен
 			auth := grpc.AuthFromProtoAuth(resp, "")
 
 			if err := store.SaveAuth(ctx, auth); err != nil {
@@ -92,6 +113,13 @@ func NewLoginCmd() *cobra.Command {
 				return err
 			}
 
+			fmt.Print("Enter master password (for decryption): ")
+			masterPass, err := term.ReadPassword(int(syscall.Stdin))
+			fmt.Println()
+			if err != nil {
+				return err
+			}
+
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 
@@ -103,6 +131,10 @@ func NewLoginCmd() *cobra.Command {
 			resp, err := grpcClient.GetAuthClient().Login(ctx, grpc.RegisterInfoToProtoLoginRequest(loginInfo))
 			if err != nil {
 				return fmt.Errorf("login failed: %w", err)
+			}
+
+			if err := keyManager.LoadMasterKey(string(masterPass)); err != nil {
+				return fmt.Errorf("failed to load master key: %w", err)
 			}
 
 			fmt.Println("Login successful!")
@@ -132,6 +164,9 @@ func NewLogoutCmd() *cobra.Command {
 			}
 
 			grpcClient.SetToken("")
+
+			keyManager.Clear()
+
 			fmt.Println("Logged out")
 
 			return nil
@@ -162,6 +197,12 @@ func NewStatusCmd() *cobra.Command {
 				fmt.Println("Logged in")
 				expiresIn := time.Until(auth.SavedAt.Add(time.Duration(auth.ExpiresIn) * time.Second))
 				fmt.Printf("Token expires in: %v\n", expiresIn.Round(time.Second))
+			}
+
+			if keyManager.GetMasterKey() != nil {
+				fmt.Println("Master key loaded in memory")
+			} else {
+				fmt.Println("Master key not loaded")
 			}
 
 			return nil

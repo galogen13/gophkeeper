@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/galogen13/gophkeeper/internal/client"
+	"github.com/galogen13/gophkeeper/internal/client/crypto"
 	"github.com/galogen13/gophkeeper/internal/client/grpc"
 	"github.com/galogen13/gophkeeper/internal/client/storage/sqlite"
 )
@@ -19,6 +20,8 @@ var (
 
 	grpcClient *grpc.Client
 	store      client.Storage
+
+	keyManager *crypto.MasterKeyManager
 )
 
 func NewRootCmd(version, date string) *cobra.Command {
@@ -82,7 +85,12 @@ func initializeClient() error {
 
 	store = sqliteStore
 
-	// Загружаем токен, если есть
+	manager, err := crypto.NewMasterKeyManager()
+	if err != nil {
+		return fmt.Errorf("failed to init key manager: %w", err)
+	}
+	keyManager = manager
+
 	if err := loadToken(); err != nil {
 		return err
 	}
