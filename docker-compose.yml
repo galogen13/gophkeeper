@@ -12,8 +12,12 @@ services:
     ports:
       - "5435:5432"
     volumes:
-      - gophkeeper_pg_data:/var/lib/postgresql:Z
-      - ./internal/server/repository/postgres/migrations:/docker-entrypoint-initdb.d
+      - type: volume
+        source: gophkeeper_pg_data
+        target: /var/lib/postgresql/data
+      - type: bind
+        source: ./internal/server/repository/postgres/migrations
+        target: /docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U gophkeeper"]
       interval: 5s

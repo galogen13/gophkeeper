@@ -8,6 +8,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/metadata"
 
 	"github.com/galogen13/gophkeeper/internal/pkg/proto"
@@ -36,6 +37,14 @@ func NewClient(cfg Config) (*Client, error) {
 	} else {
 		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	}
+
+	opts = append(opts,
+		grpc.WithKeepaliveParams(keepalive.ClientParameters{
+			Time:                30 * time.Second, // отправлять ping каждые 30 секунд
+			Timeout:             10 * time.Second, // ждать ответ на ping 10 секунд
+			PermitWithoutStream: true,             // разрешить ping даже без активных стримов
+		}),
+	)
 
 	// Таймаут по умолчанию
 	opts = append(opts, grpc.WithConnectParams(grpc.ConnectParams{
@@ -80,9 +89,4 @@ func (c *Client) WithAuth(ctx context.Context) context.Context {
 		return ctx
 	}
 	return metadata.AppendToOutgoingContext(ctx, "authorization", "Bearer "+c.token)
-}
-
-// WithTimeout создаёт контекст с таймаутом
-func (c *Client) WithTimeout(parent context.Context, timeout time.Duration) (context.Context, context.CancelFunc) {
-	return context.WithTimeout(parent, timeout)
 }

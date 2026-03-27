@@ -99,7 +99,6 @@ func authenticate() error {
 
 	// Проверяем, существует ли уже аккаунт (по наличию соли)
 	if keyManager.HasMasterKey() {
-		// Пробуем войти
 		resp, err := grpcClient.GetAuthClient().Login(ctx, grpc.RegisterInfoToProtoLoginRequest(registerLoginInfo))
 		if err != nil {
 			return fmt.Errorf("login failed: %w", err)
@@ -115,6 +114,9 @@ func authenticate() error {
 		}
 
 		grpcClient.SetToken(auth.AccessToken)
+
+		return syncDataInteractive()
+
 	} else {
 		// Регистрация нового пользователя
 		fmt.Print("Confirm master password: ")
@@ -199,6 +201,9 @@ func executeCommand(input string) error {
 	case "logout":
 		return logoutInteractive()
 
+	case "login":
+		return authenticate()
+
 	default:
 		return fmt.Errorf("unknown command: %s. Type 'help' for available commands", command)
 	}
@@ -216,13 +221,15 @@ Available commands:
   delete <id>         Delete a secret
   sync                Synchronize with server
   status              Show authentication status
+  login               Login and start session
   logout              Logout and clear session`)
 }
 
 // Интерактивные версии команд (используют уже загруженный мастер-ключ)
 
 func listSecretsInteractive() error {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	secrets, err := store.ListActiveSecrets(ctx)
 	if err != nil {
 		return err
@@ -249,7 +256,9 @@ func listSecretsInteractive() error {
 }
 
 func getSecretInteractive(id string) error {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
 	mk := keyManager.GetMasterKey()
 	if mk == nil {
 		return fmt.Errorf("master key not loaded")
@@ -313,13 +322,51 @@ func getSecretInteractive(id string) error {
 
 	case client.SecretTypeBinary:
 		var data client.BinaryData
-		if err := json.Unmarshal(decryptedData, &data); err != nil {
+		if err := json.Unmarshal([]byte(secret.Meta), &data); err != nil {
 			return fmt.Errorf("failed to parse binary metadata: %w", err)
 		}
 		fmt.Println("Binary File:")
 		fmt.Printf("  Filename: %s\n", data.Filename)
 		fmt.Printf("  Size:     %d bytes\n", data.Size)
-		fmt.Printf("  Type:     %s\n", data.ContentType)
+
+		fmt.Println()
+		fmt.Println("Enter the directory path to save the file to this directory. Or press Enter to skip this step.")
+		fmt.Println("Directory path:")
+
+		reader := bufio.NewReader(os.Stdin)
+
+		dirPath, err := reader.ReadString('\n')
+		if err != nil {
+			return fmt.Errorf("failed to get directory path: %w", err)
+		}
+		dirPath = strings.TrimSpace(dirPath)
+		if dirPath != "" {
+
+			if _, err := os.Stat(dirPath); os.IsNotExist(err) {
+				fmt.Printf("Directory does not exist. Create it? (y/n): ")
+				answer, _ := reader.ReadString('\n')
+				answer = strings.TrimSpace(strings.ToLower(answer))
+
+				if answer == "y" || answer == "yes" {
+					if err := os.MkdirAll(dirPath, 0755); err != nil {
+						return fmt.Errorf("failed to create directory: %w", err)
+					}
+				} else {
+					fmt.Println("File not saved.")
+					break
+				}
+			}
+
+			filePath := filepath.Join(dirPath, data.Filename)
+
+			if err := os.WriteFile(filePath, decryptedData, 0644); err != nil {
+				return fmt.Errorf("failed to save file: %w", err)
+			}
+
+			fmt.Printf("File saved to: %s\n", filePath)
+		} else {
+			fmt.Println("File not saved.")
+		}
 	}
 
 	fmt.Println()
@@ -411,18 +458,22 @@ func createSecretInteractive(args []string) error {
 		Type:          secretTypeInt,
 		Title:         title,
 		EncryptedData: encryptedData,
+		Meta:          flags["meta"],
 		CreatedAt:     time.Now(),
 	}
 
-	if err := store.SaveSecrets(context.Background(), []*client.Secret{secret}); err != nil {
-		return err
-	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
-	// Отправляем на сервер
-	authCtx := grpcClient.WithAuth(context.Background())
+	// Отправляем сначала на сервер
+	authCtx := grpcClient.WithAuth(ctx)
 	resp, err := grpcClient.GetKeeperClient().CreateSecret(authCtx, grpc.SecretToProtoSecretCreate(secret))
 	if err != nil {
 		return fmt.Errorf("failed to create secret on server: %w", err)
+	}
+
+	if err := store.SaveSecrets(ctx, []*client.Secret{secret}); err != nil {
+		return err
 	}
 
 	fmt.Printf("Secret created: %s\n", resp.GetId())
@@ -430,11 +481,9 @@ func createSecretInteractive(args []string) error {
 }
 
 func deleteSecretInteractive(id string) error {
-	ctx := context.Background()
 
-	if err := store.DeleteSecret(ctx, id); err != nil {
-		return err
-	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
 	authCtx := grpcClient.WithAuth(ctx)
 
@@ -444,15 +493,23 @@ func deleteSecretInteractive(id string) error {
 		return fmt.Errorf("failed to delete secret on server: %w", err)
 	}
 
+	if err := store.DeleteSecret(ctx, id); err != nil {
+		return err
+	}
+
 	fmt.Printf("Secret %s deleted\n", id)
 	return nil
 }
 
 func syncDataInteractive() error {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
 	// Получаем время последней синхронизации
-	lastSync, _ := store.GetLastSyncTime(ctx)
+	lastSync, err := store.GetLastSyncTime(ctx)
+	if err != nil {
+		return fmt.Errorf("sync failed, getting last sync time failed: %w", err)
+	}
 
 	// Создаём контекст с токеном
 	authCtx := grpcClient.WithAuth(ctx)
@@ -489,7 +546,10 @@ func syncDataInteractive() error {
 }
 
 func statusInteractive() error {
-	auth, err := store.GetAuth(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	auth, err := store.GetAuth(ctx)
 	if err != nil {
 		return err
 	}
@@ -517,7 +577,10 @@ func statusInteractive() error {
 }
 
 func logoutInteractive() error {
-	store.ClearAuth(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	store.ClearAuth(ctx)
 	grpcClient.SetToken("")
 	keyManager.Clear()
 	fmt.Println("Logged out")
@@ -530,28 +593,6 @@ func truncate(s string, n int) string {
 	}
 	return s[:n-3] + "..."
 }
-
-// func stringToType(s string) client.SecretType {
-// 	switch s {
-// 	case "password":
-// 		return client.SecretTypeCredentials
-// 	case "card":
-// 		return client.SecretTypeBankCard
-// 	case "text":
-// 		return client.SecretTypeText
-// 	case "binary":
-// 		return client.SecretTypeBinary
-// 	default:
-// 		return client.SecretTypeUnknown
-// 	}
-// }
-
-// func maskCardNumber(number string) string {
-// 	if len(number) < 4 {
-// 		return number
-// 	}
-// 	return "**** **** **** " + number[len(number)-4:]
-// }
 
 // collectCredentialsData собирает данные для логина/пароля
 func collectCredentialsData(flags map[string]string) (client.CredentialsData, error) {
@@ -644,16 +685,27 @@ func collectTextData(flags map[string]string) (client.TextData, error) {
 
 	if content, ok := flags["content"]; ok {
 		data.Content = content
-	} else {
-		fmt.Println("Enter content (Ctrl+D to finish):")
-		var lines []string
-		scanner := bufio.NewScanner(os.Stdin)
-		for scanner.Scan() {
-			lines = append(lines, scanner.Text())
-		}
-		data.Content = strings.Join(lines, "\n")
+		return data, nil
 	}
 
+	fmt.Println("Enter content (multi-line, type 'END' on a new line to finish):")
+
+	var lines []string
+	scanner := bufio.NewScanner(os.Stdin)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line == "END" {
+			break
+		}
+		lines = append(lines, line)
+	}
+
+	if err := scanner.Err(); err != nil {
+		return data, err
+	}
+
+	data.Content = strings.Join(lines, "\n")
 	return data, nil
 }
 
@@ -680,7 +732,6 @@ func collectBinaryData(flags map[string]string) (client.BinaryData, []byte, erro
 
 	data.Filename = filepath.Base(filePath)
 	data.Size = int64(len(fileContent))
-	data.ContentType = "application/octet-stream"
 
 	return data, fileContent, nil
 }

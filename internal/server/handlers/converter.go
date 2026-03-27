@@ -1,10 +1,9 @@
 package handlers
 
 import (
-	"time"
+	"errors"
 
 	"github.com/galogen13/gophkeeper/internal/server/repository"
-	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -32,47 +31,20 @@ func secretToProtoSecret(secret *server.Secret) *proto.Secret {
 	return pb
 }
 
-// Конвертация proto в модель для создания
-func protoSecretToSecretCreate(req *proto.CreateSecretRequest, ownerID uuid.UUID) *server.Secret {
-
-	return &server.Secret{
-		ID:            uuid.New(),
-		OwnerID:       ownerID,
-		Type:          server.SecretType(req.GetType()),
-		Title:         req.GetTitle(),
-		EncryptedData: req.GetEncryptedData(),
-		Meta:          req.GetMeta(),
-		CreatedAt:     time.Now(),
-	}
-
-}
-
-// Конвертация proto в модель для обновления
-func protoSecretToSecretUpdate(req *proto.UpdateSecretRequest, ownerID uuid.UUID) *server.Secret {
-	id, _ := uuid.Parse(req.GetId())
-	return &server.Secret{
-		ID:            id,
-		OwnerID:       ownerID,
-		Title:         req.GetTitle(),
-		EncryptedData: req.GetEncryptedData(),
-		Meta:          req.GetMeta(),
-	}
-}
-
 // Конвертация ошибок в gRPC статусы
 func mapErrorToGRPC(err error) error {
-	switch err {
-	case repository.ErrUserNotFound:
+	switch {
+	case errors.Is(err, repository.ErrUserNotFound):
 		return status.Error(codes.NotFound, "user not found")
-	case repository.ErrEmailAlreadyExists:
+	case errors.Is(err, repository.ErrEmailAlreadyExists):
 		return status.Error(codes.AlreadyExists, "email already exists")
-	case repository.ErrInvalidCredentials:
+	case errors.Is(err, repository.ErrInvalidCredentials):
 		return status.Error(codes.Unauthenticated, "invalid credentials")
-	case repository.ErrSecretNotFound:
+	case errors.Is(err, repository.ErrSecretNotFound):
 		return status.Error(codes.NotFound, "secret not found")
-	case repository.ErrSecretDeleted:
+	case errors.Is(err, repository.ErrSecretDeleted):
 		return status.Error(codes.FailedPrecondition, "secret is deleted")
-	case repository.ErrVersionMismatch:
+	case errors.Is(err, repository.ErrVersionMismatch):
 		return status.Error(codes.FailedPrecondition, "version mismatch")
 	default:
 		return status.Error(codes.Internal, "internal server error")

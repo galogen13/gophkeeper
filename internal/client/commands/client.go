@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -24,6 +25,10 @@ var (
 )
 
 func initializeClient() error {
+
+	flag.StringVar(&cfgFile, "config", "", "config file path")
+	flag.Parse()
+
 	if err := initConfig(); err != nil {
 		return err
 	}

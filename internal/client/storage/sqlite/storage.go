@@ -213,70 +213,64 @@ func (s *SQLiteStorage) GetSecret(ctx context.Context, id string) (*client.Secre
 	return &secret, nil
 }
 
-func (s *SQLiteStorage) ListSecrets(ctx context.Context) ([]*client.Secret, error) {
-	query := `SELECT id, type, title, encrypted_data, meta, created_at, updated_at, is_deleted
-              FROM secrets ORDER BY created_at DESC`
+// scanSecret сканирует строку в структуру Secret
+func (s *SQLiteStorage) scanSecret(scanner interface{ Scan(...any) error }) (*client.Secret, error) {
+	var secret client.Secret
+	var updatedAt sql.NullTime
 
-	rows, err := s.db.QueryContext(ctx, query)
+	err := scanner.Scan(
+		&secret.ID,
+		&secret.Type,
+		&secret.Title,
+		&secret.EncryptedData,
+		&secret.Meta,
+		&secret.CreatedAt,
+		&updatedAt,
+		&secret.IsDeleted,
+	)
 	if err != nil {
 		return nil, err
+	}
+
+	if updatedAt.Valid {
+		secret.UpdatedAt = &updatedAt.Time
+	}
+
+	return &secret, nil
+}
+
+// querySecrets выполняет запрос и возвращает список секретов
+func (s *SQLiteStorage) querySecrets(ctx context.Context, query string, args ...any) ([]*client.Secret, error) {
+	rows, err := s.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("query failed: %w", err)
 	}
 	defer rows.Close()
 
 	var secrets []*client.Secret
 	for rows.Next() {
-		var secret client.Secret
-		var updatedAt sql.NullTime
-
-		err := rows.Scan(
-			&secret.ID, &secret.Type, &secret.Title, &secret.EncryptedData,
-			&secret.Meta, &secret.CreatedAt, &updatedAt, &secret.IsDeleted,
-		)
+		secret, err := s.scanSecret(rows)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("scan failed: %w", err)
 		}
-
-		if updatedAt.Valid {
-			secret.UpdatedAt = &updatedAt.Time
-		}
-
-		secrets = append(secrets, &secret)
+		secrets = append(secrets, secret)
 	}
 
 	return secrets, rows.Err()
 }
 
+// ListSecrets возвращает все секреты (включая удалённые)
+func (s *SQLiteStorage) ListSecrets(ctx context.Context) ([]*client.Secret, error) {
+	query := `SELECT id, type, title, encrypted_data, meta, created_at, updated_at, is_deleted
+              FROM secrets ORDER BY created_at DESC`
+	return s.querySecrets(ctx, query)
+}
+
+// ListActiveSecrets возвращает только активные секреты (не удалённые)
 func (s *SQLiteStorage) ListActiveSecrets(ctx context.Context) ([]*client.Secret, error) {
 	query := `SELECT id, type, title, encrypted_data, meta, created_at, updated_at, is_deleted
               FROM secrets WHERE is_deleted = 0 ORDER BY created_at DESC`
-
-	rows, err := s.db.QueryContext(ctx, query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var secrets []*client.Secret
-	for rows.Next() {
-		var secret client.Secret
-		var updatedAt sql.NullTime
-
-		err := rows.Scan(
-			&secret.ID, &secret.Type, &secret.Title, &secret.EncryptedData,
-			&secret.Meta, &secret.CreatedAt, &updatedAt, &secret.IsDeleted,
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		if updatedAt.Valid {
-			secret.UpdatedAt = &updatedAt.Time
-		}
-
-		secrets = append(secrets, &secret)
-	}
-
-	return secrets, rows.Err()
+	return s.querySecrets(ctx, query)
 }
 
 func (s *SQLiteStorage) DeleteSecret(ctx context.Context, id string) error {

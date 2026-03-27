@@ -26,10 +26,6 @@ func (r *secretRepository) Create(ctx context.Context, secret *server.Secret) er
         VALUES ($1, $2, $3, $4, $5, $6, $7)
     `
 
-	if secret.ID == uuid.Nil {
-		secret.ID = uuid.New()
-	}
-
 	_, err := r.db.ExecContext(ctx, query,
 		secret.ID, secret.OwnerID, secret.Type, secret.Title,
 		secret.EncryptedData, secret.Meta, secret.CreatedAt,

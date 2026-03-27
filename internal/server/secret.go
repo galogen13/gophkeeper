@@ -63,7 +63,6 @@ type TextData struct {
 }
 
 type BinaryData struct {
-	Filename    string `json:"filename"`
-	ContentType string `json:"content_type"`
-	Size        int64  `json:"size"`
+	Filename string `json:"filename"`
+	Size     int64  `json:"size"`
 }

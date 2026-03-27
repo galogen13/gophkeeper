@@ -1,0 +1,59 @@
+# GophKeeper — Менеджер паролей и приватных данных
+
+## Основные возможности
+
+- **Безопасное хранение** — end-to-end шифрование данных
+- **Синхронизация** между несколькими устройствами
+- **Поддержка различных типов данных**:
+  - Логины и пароли
+  - Банковские карты
+  - Текстовые заметки
+  - Бинарные файлы
+- **Кроссплатформенный CLI-клиент** (Windows, Linux, macOS)
+- **Двухфакторная защита** — пароль аккаунта + мастер-пароль
+
+## Технологический стек
+
+| Компонент | Технология | Назначение |
+|-----------|------------|------------|
+| **Язык** | Go 1.21+ | Основной язык разработки |
+| **Транспорт** | gRPC + Protocol Buffers | Клиент-серверное взаимодействие |
+| **Серверная БД** | PostgreSQL 17 | Хранение пользователей и зашифрованных данных |
+| **Клиентская БД** | SQLite (glebarez/sqlite) | Локальное кэширование |
+| **Аутентификация** | JWT (access + refresh токены) | Сессии пользователей |
+| **Хеширование паролей** | Argon2id | Хранение паролей аккаунтов |
+| **Шифрование данных** | AES-256-GCM + PBKDF2 | End-to-end шифрование |
+| **Логирование** | zap | Структурированные логи |
+
+## Алгоритм синхронизации
+
+Клиент хранит время последней синхронизации
+
+При sync отправляет это время на сервер
+
+Сервер возвращает все изменения после указанного времени
+
+Клиент применяет изменения локально
+
+
+## Запуск сервера
+make docker-up
+make build-server
+./bin/server --config ./configs/server.yaml
+
+## Запуск клиента
+make build-client
+./bin/gophkeeper --config ./configs/client.yaml
+
+## Основные команды клиента
+| help | Show this help message |
+|------|------------------------|
+| exit, quit | Exit GophKeeper |
+| list, ls | List all secrets |
+| get <id> | Show secret details |
+| create <type> --title <name> | Create a new secret (password/card/text/binary) |
+| delete <id> | Delete a secret |
+| sync | Synchronize with server |
+| status | Show authentication status |
+| login | Login and start session |
+| logout | Logout and clear session |
