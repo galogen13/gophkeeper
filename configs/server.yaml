@@ -1,0 +1,26 @@
+server:
+  port: 8080
+  host: "localhost"
+
+database:
+  host: "localhost"
+  port: 5435
+  user: "gophkeeper"
+  password: "gophkeeper"
+  dbname: "gophkeeper"
+  sslmode: "disable"
+
+jwt:
+  secret: "secretkey"
+  access_token_ttl: 15m
+  refresh_token_ttl: 168h  # 7 days
+
+crypto:
+  argon2:
+    time: 1
+    memory: 65536
+    threads: 4
+    key_len: 32
+
+log:
+  level: "debug"

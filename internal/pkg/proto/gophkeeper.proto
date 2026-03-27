@@ -1,0 +1,115 @@
+edition = "2023";
+
+package gophkeeper;
+option go_package = "github.com/galogen13/gophkeeper/internal/pkg/proto";
+option features.(pb.go).api_level = API_OPAQUE;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/go_features.proto";
+
+// Сервис аутентификации
+service AuthService {
+  rpc Register(RegisterRequest) returns (AuthResponse);
+  rpc Login(LoginRequest) returns (AuthResponse);
+  rpc RefreshToken(RefreshTokenRequest) returns (AuthResponse);
+}
+
+// Сервис для работы с секретами
+service KeeperService {
+  rpc CreateSecret(CreateSecretRequest) returns (Secret);
+  rpc GetSecret(GetSecretRequest) returns (Secret);
+  rpc ListSecrets(ListSecretsRequest) returns (ListSecretsResponse);
+  rpc UpdateSecret(UpdateSecretRequest) returns (Secret);
+  rpc DeleteSecret(DeleteSecretRequest) returns (google.protobuf.Empty);
+  rpc SyncSecrets(SyncRequest) returns (SyncResponse);
+}
+
+// Типы секретов
+enum SecretType {
+  SECRET_TYPE_UNSPECIFIED = 0;
+  SECRET_TYPE_CREDENTIALS = 1;  // логин/пароль
+  SECRET_TYPE_TEXT = 2;          // произвольный текст
+  SECRET_TYPE_BINARY = 3;        // бинарные данные
+  SECRET_TYPE_BANK_CARD = 4;     // банковская карта
+}
+
+// Основная структура секрета
+message Secret {
+  string id = 1;
+  string owner_id = 2;
+  SecretType type = 3;
+  string title = 4;
+  bytes encrypted_data = 5;
+  string meta = 6;           // JSON с метаинформацией
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+  bool is_deleted = 10;
+}
+
+// Запросы и ответы
+message RegisterRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message AuthResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+  int64 expires_in = 3;
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+message CreateSecretRequest {
+  string id = 1;
+  SecretType type = 2;
+  string title = 3;
+  bytes encrypted_data = 4;
+  string meta = 5;
+}
+
+message GetSecretRequest {
+  string id = 1;
+}
+
+message ListSecretsRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  bool include_deleted = 3;
+}
+
+message ListSecretsResponse {
+  repeated Secret secrets = 1;
+  int32 total = 2;
+  int32 page = 3;
+}
+
+message UpdateSecretRequest {
+  string id = 1;
+  string title = 2;
+  bytes encrypted_data = 3;
+  string meta = 4;
+}
+
+message DeleteSecretRequest {
+  string id = 1;
+  bool permanent = 2;  // true = полное удаление, false = soft delete
+}
+
+message SyncRequest {
+  google.protobuf.Timestamp last_sync = 1;
+  repeated string known_ids = 2;  // ID секретов, которые есть у клиента
+}
+
+message SyncResponse {
+  repeated Secret secrets = 1;        // новые и обновлённые секреты
+  repeated string deleted_ids = 2;    // ID удалённых секретов
+}
