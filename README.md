@@ -37,23 +37,29 @@
 
 
 ## Запуск сервера
+
 make docker-up
+
 make build-server
+
 ./bin/server --config ./configs/server.yaml
 
 ## Запуск клиента
+
 make build-client
+
 ./bin/gophkeeper --config ./configs/client.yaml
 
 ## Основные команды клиента
-| help | Show this help message |
-|------|------------------------|
-| exit, quit | Exit GophKeeper |
-| list, ls | List all secrets |
-| get <id> | Show secret details |
-| create <type> --title <name> | Create a new secret (password/card/text/binary) |
-| delete <id> | Delete a secret |
-| sync | Synchronize with server |
-| status | Show authentication status |
-| login | Login and start session |
-| logout | Logout and clear session |
+| Команда | Действие |
+|---------|----------|
+| help | Показать help |
+| exit, quit | Завершить работу Gophkeeper |
+| list, ls | Показать список всех секретов |
+| get <id> | Получить детали секрета по id |
+| create <type> --title <name> | Создать новый секрет (password/card/text/binary) |
+| delete <id> | Удалить секрет |
+| sync | Синхронизироваться с сервером |
+| status | Показать статус аутентификации |
+| login | Ввести данные авторизации и начать сеанс |
+| logout | Разлогиниться и завершить сеанс |
