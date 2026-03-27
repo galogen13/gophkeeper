@@ -38,17 +38,21 @@
 
 ## Запуск сервера
 
+```
 make docker-up
 
 make build-server
 
 ./bin/server --config ./configs/server.yaml
+```
 
 ## Запуск клиента
 
+```
 make build-client
 
 ./bin/gophkeeper --config ./configs/client.yaml
+```
 
 ## Основные команды клиента
 | Команда | Действие |
